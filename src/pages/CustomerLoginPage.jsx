@@ -105,6 +105,29 @@ export default function CustomerLoginPage() {
           {t('changeSalon') || 'Change Salon'}
         </button>
       </form>
+
+      {/* Demo hint */}
+      {sheetsDB.isDemoMode && (
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <p className="text-xs text-slate-400 text-center mb-2">Demo accounts:</p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {[
+              { name: '김서연', phone: '010-1234-5678' },
+              { name: '송예린', phone: '010-8901-2345' },
+              { name: 'Emily', phone: '010-6789-0123' },
+            ].map((d) => (
+              <button
+                key={d.phone}
+                type="button"
+                onClick={() => setPhone(d.phone)}
+                className="px-3 py-1.5 text-xs bg-primary/5 text-primary font-medium rounded-lg hover:bg-primary/10 transition-colors"
+              >
+                {d.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 
@@ -131,29 +154,39 @@ export default function CustomerLoginPage() {
 
       {/* ── Desktop ── */}
       <div className="hidden lg:flex min-h-screen">
-        {/* Left: Branding Panel */}
-        <div className="w-1/2 bg-gradient-to-br from-primary via-primary-dark to-rose-accent flex flex-col items-center justify-center p-16 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-24 right-20"><span className="material-symbols-outlined text-white text-[100px]">person_search</span></div>
-            <div className="absolute bottom-28 left-16"><span className="material-symbols-outlined text-white text-[80px]">spa</span></div>
-            <div className="absolute top-1/3 left-1/4"><span className="material-symbols-outlined text-white text-[60px]">waving_hand</span></div>
-          </div>
-          <div className="relative z-10 text-center max-w-md">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-8 border border-white/30">
-              <span className="material-symbols-outlined text-white text-[40px]">waving_hand</span>
-            </div>
-            <h1 className="text-white text-4xl font-extrabold tracking-tight mb-4">
-              {t('hello') || 'Welcome Back!'}
+        {/* Left: Photo Editorial Panel */}
+        <div className="w-1/2 relative overflow-hidden">
+          {/* Real photo background */}
+          <img
+            src="/images/welcome.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+          {/* Pink tint overlay */}
+          <div className="absolute inset-0 bg-primary/10 mix-blend-multiply" />
+
+          {/* Bottom text content */}
+          <div className="absolute inset-0 flex flex-col justify-end p-14 z-10">
+            <p className="text-white/50 text-[10px] font-bold uppercase tracking-[5px] mb-3">Beauty & Style</p>
+            <h1 className="text-white text-5xl font-extrabold tracking-tight leading-[1.1] mb-4">
+              {t('hello') || 'Welcome'}
             </h1>
-            <p className="text-white/70 text-lg leading-relaxed mb-8">
-              {t('phonePrompt') || 'Enter your phone number to check in and view your loyalty points, coupons, and visit history.'}
+            <p className="text-white/60 text-sm leading-relaxed mb-6 max-w-xs">
+              {t('phonePrompt') || 'Check in to view your loyalty points, coupons, and visit history.'}
             </p>
             {currentSalon && (
-              <div className="inline-flex items-center gap-3 bg-white/15 backdrop-blur-md border border-white/20 rounded-xl px-6 py-3">
-                <span className="material-symbols-outlined text-white">storefront</span>
-                <span className="text-white font-bold text-lg">{currentSalon.salonName}</span>
+              <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md border border-white/15 rounded-full px-5 py-2.5 w-fit">
+                <span className="material-symbols-outlined text-white/70 text-sm">storefront</span>
+                <span className="text-white/90 font-semibold text-sm">{currentSalon.salonName}</span>
               </div>
             )}
+          </div>
+
+          {/* Top-right branding */}
+          <div className="absolute top-8 right-8 z-10">
+            <p className="text-white/25 text-[10px] font-bold uppercase tracking-[4px]">SalonPay</p>
           </div>
         </div>
 

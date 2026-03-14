@@ -28,18 +28,25 @@ import sheetsDB from './services/googleSheetsDB';
 
 function AppContent() {
   useEffect(() => {
-    // Google Sheets API 초기화
+    // 저장된 미용실 복원 (데모 모드 포함)
+    sheetsDB.restoreCurrentSalon();
+
+    // Google Sheets API 초기화 (데모 모드가 아닐 때만 필요하지만, 전환 대비 항상 시도)
     const initGoogleAPI = async () => {
       try {
-        // gapi 로드 대기
-        const waitForGapi = () => new Promise((resolve) => {
+        const waitForGapi = () => new Promise((resolve, reject) => {
           if (typeof window.gapi !== 'undefined') {
             resolve();
           } else {
+            let elapsed = 0;
             const checkInterval = setInterval(() => {
+              elapsed += 100;
               if (typeof window.gapi !== 'undefined') {
                 clearInterval(checkInterval);
                 resolve();
+              } else if (elapsed > 10000) {
+                clearInterval(checkInterval);
+                reject(new Error('gapi load timeout'));
               }
             }, 100);
           }

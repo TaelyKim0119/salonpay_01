@@ -4,6 +4,72 @@
 
 import { CONFIG } from '../config/config';
 
+// ========== DEMO DATA ==========
+const DEMO_SALON_CODE = 'DEMO1234';
+const DEMO_SALON = {
+  code: DEMO_SALON_CODE,
+  spreadsheetId: 'demo_spreadsheet',
+  salonName: 'Violet Hair Studio',
+  region: 'Gangnam, Seoul'
+};
+
+const DEMO_CUSTOMERS = [
+  { id: 'c1', name: '김서연', phone: '010-1234-5678', birthday: '0315', points: 8500, visitCount: 12, memo: 'VIP 단골', createdAt: '2025-06-10', updatedAt: '2026-03-10' },
+  { id: 'c2', name: '이지은', phone: '010-2345-6789', birthday: '0822', points: 3200, visitCount: 6, memo: '펌 선호', createdAt: '2025-09-15', updatedAt: '2026-03-05' },
+  { id: 'c3', name: '박하윤', phone: '010-3456-7890', birthday: '1105', points: 1500, visitCount: 3, memo: '', createdAt: '2025-12-01', updatedAt: '2026-02-20' },
+  { id: 'c4', name: '정민지', phone: '010-4567-8901', birthday: '0428', points: 5800, visitCount: 9, memo: '염색 전문', createdAt: '2025-07-20', updatedAt: '2026-03-12' },
+  { id: 'c5', name: '최유나', phone: '010-5678-9012', birthday: '0710', points: 900, visitCount: 2, memo: '신규 고객', createdAt: '2026-01-15', updatedAt: '2026-02-28' },
+  { id: 'c6', name: 'Emily Chen', phone: '010-6789-0123', birthday: '0203', points: 4200, visitCount: 7, memo: 'Balayage lover', createdAt: '2025-08-05', updatedAt: '2026-03-08' },
+  { id: 'c7', name: '田中美咲', phone: '010-7890-1234', birthday: '0920', points: 2100, visitCount: 4, memo: '일본 고객', createdAt: '2025-11-10', updatedAt: '2026-03-01' },
+  { id: 'c8', name: '송예린', phone: '010-8901-2345', birthday: '1225', points: 6700, visitCount: 11, memo: '클리닉 정기', createdAt: '2025-05-20', updatedAt: '2026-03-14' },
+];
+
+const DEMO_VISITS = [
+  { id: 'v1', customerId: 'c1', date: '2026-03-10', service: '발레아쥬 염색', amount: 250000, discount: 0, pointsUsed: 0, pointsEarned: 12500, paymentMethod: 'card', finalAmount: 250000, createdAt: '2026-03-10' },
+  { id: 'v2', customerId: 'c1', date: '2026-02-15', service: '커트 + 트리트먼트', amount: 80000, discount: 5000, pointsUsed: 0, pointsEarned: 3750, paymentMethod: 'cash', finalAmount: 75000, createdAt: '2026-02-15' },
+  { id: 'v3', customerId: 'c1', date: '2026-01-20', service: '디지털 펌', amount: 180000, discount: 0, pointsUsed: 2000, pointsEarned: 8900, paymentMethod: 'card', finalAmount: 178000, createdAt: '2026-01-20' },
+  { id: 'v4', customerId: 'c2', date: '2026-03-05', service: 'S컬 펌', amount: 200000, discount: 0, pointsUsed: 0, pointsEarned: 10000, paymentMethod: 'card', finalAmount: 200000, createdAt: '2026-03-05' },
+  { id: 'v5', customerId: 'c2', date: '2026-01-28', service: '커트', amount: 35000, discount: 0, pointsUsed: 0, pointsEarned: 1750, paymentMethod: 'cash', finalAmount: 35000, createdAt: '2026-01-28' },
+  { id: 'v6', customerId: 'c3', date: '2026-02-20', service: '매직 셋팅펌', amount: 150000, discount: 0, pointsUsed: 0, pointsEarned: 7500, paymentMethod: 'card', finalAmount: 150000, createdAt: '2026-02-20' },
+  { id: 'v7', customerId: 'c4', date: '2026-03-12', service: '풀 컬러 체인지', amount: 300000, discount: 10000, pointsUsed: 0, pointsEarned: 14500, paymentMethod: 'card', finalAmount: 290000, createdAt: '2026-03-12' },
+  { id: 'v8', customerId: 'c4', date: '2026-02-10', service: '뿌리 염색 + 글레이징', amount: 120000, discount: 0, pointsUsed: 0, pointsEarned: 6000, paymentMethod: 'cash', finalAmount: 120000, createdAt: '2026-02-10' },
+  { id: 'v9', customerId: 'c4', date: '2026-01-05', service: '커트 + 클리닉', amount: 90000, discount: 0, pointsUsed: 1000, pointsEarned: 4450, paymentMethod: 'card', finalAmount: 89000, createdAt: '2026-01-05' },
+  { id: 'v10', customerId: 'c5', date: '2026-02-28', service: '커트', amount: 40000, discount: 0, pointsUsed: 0, pointsEarned: 2000, paymentMethod: 'card', finalAmount: 40000, createdAt: '2026-02-28' },
+  { id: 'v11', customerId: 'c6', date: '2026-03-08', service: 'Balayage Highlight', amount: 280000, discount: 0, pointsUsed: 0, pointsEarned: 14000, paymentMethod: 'card', finalAmount: 280000, createdAt: '2026-03-08' },
+  { id: 'v12', customerId: 'c6', date: '2026-02-01', service: 'Trim + Deep Treatment', amount: 70000, discount: 0, pointsUsed: 0, pointsEarned: 3500, paymentMethod: 'cash', finalAmount: 70000, createdAt: '2026-02-01' },
+  { id: 'v13', customerId: 'c7', date: '2026-03-01', service: 'ストレートパーマ', amount: 160000, discount: 0, pointsUsed: 0, pointsEarned: 8000, paymentMethod: 'card', finalAmount: 160000, createdAt: '2026-03-01' },
+  { id: 'v14', customerId: 'c8', date: '2026-03-14', service: '두피 스케일링 + 헤드스파', amount: 100000, discount: 0, pointsUsed: 0, pointsEarned: 5000, paymentMethod: 'card', finalAmount: 100000, createdAt: '2026-03-14' },
+  { id: 'v15', customerId: 'c8', date: '2026-02-22', service: '영양 클리닉', amount: 80000, discount: 5000, pointsUsed: 0, pointsEarned: 3750, paymentMethod: 'cash', finalAmount: 75000, createdAt: '2026-02-22' },
+  { id: 'v16', customerId: 'c8', date: '2026-01-30', service: '커트 + 염색', amount: 180000, discount: 0, pointsUsed: 3000, pointsEarned: 8850, paymentMethod: 'card', finalAmount: 177000, createdAt: '2026-01-30' },
+  { id: 'v17', customerId: 'c1', date: '2025-12-20', service: '글로시 염색', amount: 200000, discount: 0, pointsUsed: 0, pointsEarned: 10000, paymentMethod: 'card', finalAmount: 200000, createdAt: '2025-12-20' },
+  { id: 'v18', customerId: 'c4', date: '2025-12-05', service: '하이라이트 + 커트', amount: 220000, discount: 0, pointsUsed: 0, pointsEarned: 11000, paymentMethod: 'card', finalAmount: 220000, createdAt: '2025-12-05' },
+  // ── 2025년 추가 더미 (c1 김서연) ──
+  { id: 'v19', customerId: 'c1', date: '2025-02-14', service: '커트 + 볼륨 펌', amount: 170000, discount: 0, pointsUsed: 0, pointsEarned: 8500, paymentMethod: 'card', finalAmount: 170000, createdAt: '2025-02-14' },
+  { id: 'v20', customerId: 'c1', date: '2025-03-22', service: '애쉬 베이지 염색', amount: 180000, discount: 0, pointsUsed: 0, pointsEarned: 9000, paymentMethod: 'card', finalAmount: 180000, createdAt: '2025-03-22' },
+  { id: 'v21', customerId: 'c1', date: '2025-05-10', service: '커트', amount: 35000, discount: 0, pointsUsed: 0, pointsEarned: 1750, paymentMethod: 'cash', finalAmount: 35000, createdAt: '2025-05-10' },
+  { id: 'v22', customerId: 'c1', date: '2025-06-18', service: '레이어드 컷 + 클리닉', amount: 95000, discount: 0, pointsUsed: 0, pointsEarned: 4750, paymentMethod: 'card', finalAmount: 95000, createdAt: '2025-06-18' },
+  { id: 'v23', customerId: 'c1', date: '2025-07-25', service: '하이라이트 발레아쥬', amount: 260000, discount: 0, pointsUsed: 0, pointsEarned: 13000, paymentMethod: 'card', finalAmount: 260000, createdAt: '2025-07-25' },
+  { id: 'v24', customerId: 'c1', date: '2025-09-05', service: '영양 트리트먼트', amount: 80000, discount: 0, pointsUsed: 0, pointsEarned: 4000, paymentMethod: 'cash', finalAmount: 80000, createdAt: '2025-09-05' },
+  { id: 'v25', customerId: 'c1', date: '2025-10-12', service: 'S컬 펌', amount: 200000, discount: 0, pointsUsed: 0, pointsEarned: 10000, paymentMethod: 'card', finalAmount: 200000, createdAt: '2025-10-12' },
+  { id: 'v26', customerId: 'c1', date: '2025-11-08', service: '뿌리 염색 + 글레이징', amount: 130000, discount: 0, pointsUsed: 0, pointsEarned: 6500, paymentMethod: 'card', finalAmount: 130000, createdAt: '2025-11-08' },
+  // ── 2025년 추가 더미 (c4 정민지) ──
+  { id: 'v27', customerId: 'c4', date: '2025-03-15', service: '풀 컬러 체인지', amount: 280000, discount: 0, pointsUsed: 0, pointsEarned: 14000, paymentMethod: 'card', finalAmount: 280000, createdAt: '2025-03-15' },
+  { id: 'v28', customerId: 'c4', date: '2025-06-20', service: '커트 + 트리트먼트', amount: 85000, discount: 0, pointsUsed: 0, pointsEarned: 4250, paymentMethod: 'cash', finalAmount: 85000, createdAt: '2025-06-20' },
+  { id: 'v29', customerId: 'c4', date: '2025-09-10', service: '디지털 펌', amount: 190000, discount: 0, pointsUsed: 0, pointsEarned: 9500, paymentMethod: 'card', finalAmount: 190000, createdAt: '2025-09-10' },
+  // ── 2025년 추가 더미 (c8 송예린) ──
+  { id: 'v30', customerId: 'c8', date: '2025-04-20', service: '두피 스케일링', amount: 70000, discount: 0, pointsUsed: 0, pointsEarned: 3500, paymentMethod: 'card', finalAmount: 70000, createdAt: '2025-04-20' },
+  { id: 'v31', customerId: 'c8', date: '2025-07-15', service: '매직 셋팅펌', amount: 160000, discount: 0, pointsUsed: 0, pointsEarned: 8000, paymentMethod: 'card', finalAmount: 160000, createdAt: '2025-07-15' },
+  { id: 'v32', customerId: 'c8', date: '2025-10-05', service: '글로시 염색', amount: 200000, discount: 0, pointsUsed: 0, pointsEarned: 10000, paymentMethod: 'card', finalAmount: 200000, createdAt: '2025-10-05' },
+];
+
+const DEMO_COUPONS = [
+  { id: 'cp1', customerId: 'c1', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-04-15', isUsed: false, usedAt: null, createdAt: '2026-03-01' },
+  { id: 'cp2', customerId: 'c1', type: 'loyalty', amount: 15, isPercent: true, expiryDate: '2026-06-30', isUsed: false, usedAt: null, createdAt: '2026-03-10' },
+  { id: 'cp3', customerId: 'c4', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-05-28', isUsed: false, usedAt: null, createdAt: '2026-04-01' },
+  { id: 'cp4', customerId: 'c6', type: 'referral', amount: 20000, isPercent: false, expiryDate: '2026-04-30', isUsed: false, usedAt: null, createdAt: '2026-02-15' },
+  { id: 'cp5', customerId: 'c8', type: 'loyalty', amount: 10, isPercent: true, expiryDate: '2026-05-31', isUsed: false, usedAt: null, createdAt: '2026-03-14' },
+];
+
 class GoogleSheetsDB {
   constructor() {
     this.spreadsheetId = null;
@@ -12,6 +78,7 @@ class GoogleSheetsDB {
     this.cache = {};
     this.isInitialized = false;
     this.accessToken = null;
+    this.isDemoMode = false;
   }
 
   async initialize() {
@@ -78,6 +145,10 @@ class GoogleSheetsDB {
         this.salonInfo = JSON.parse(saved);
         this.spreadsheetId = this.salonInfo.spreadsheetId;
         this.salonCode = this.salonInfo.code;
+        // 데모 모드 복원
+        if (this.salonCode === DEMO_SALON_CODE) {
+          this.isDemoMode = true;
+        }
         return this.salonInfo;
       }
     } catch (error) {
@@ -90,6 +161,7 @@ class GoogleSheetsDB {
     this.spreadsheetId = null;
     this.salonCode = null;
     this.salonInfo = null;
+    this.isDemoMode = false;
     localStorage.removeItem('salonpay_current_salon');
     this._clearCache();
   }
@@ -207,6 +279,17 @@ class GoogleSheetsDB {
 
   async connectBySalonCode(code) {
     const inputCode = code.trim().toUpperCase();
+
+    // 데모 모드 체크
+    if (inputCode === DEMO_SALON_CODE) {
+      this.isDemoMode = true;
+      this.salonInfo = { ...DEMO_SALON };
+      this.spreadsheetId = DEMO_SALON.spreadsheetId;
+      this.salonCode = DEMO_SALON.code;
+      this._saveCurrentSalon();
+      return { success: true, salon: this.salonInfo };
+    }
+
     let spreadsheetId = inputCode;
 
     // 짧은 코드인 경우 로컬에서 검색
@@ -266,6 +349,7 @@ class GoogleSheetsDB {
   }
 
   async findMySalon(accessToken) {
+    if (this.isDemoMode) return this.salonInfo;
     this.setAccessToken(accessToken);
 
     try {
@@ -315,13 +399,14 @@ class GoogleSheetsDB {
   }
 
   isConnected() {
-    return !!this.spreadsheetId;
+    return !!this.spreadsheetId || this.isDemoMode;
   }
 
   // ========== 고객 관리 ==========
 
   async getAllCustomers() {
     this._ensureConnected();
+    if (this.isDemoMode) return [...DEMO_CUSTOMERS];
 
     const cacheKey = 'customers';
     const cached = this._getCache(cacheKey, CONFIG.CACHE.CUSTOMER_DATA);
@@ -363,6 +448,7 @@ class GoogleSheetsDB {
 
   async getAllVisits() {
     this._ensureConnected();
+    if (this.isDemoMode) return [...DEMO_VISITS];
 
     const cacheKey = 'visits';
     const cached = this._getCache(cacheKey, CONFIG.CACHE.VISITS);
@@ -403,6 +489,7 @@ class GoogleSheetsDB {
 
   async getAllCoupons() {
     this._ensureConnected();
+    if (this.isDemoMode) return [...DEMO_COUPONS];
 
     const response = await window.gapi.client.sheets.spreadsheets.values.get({
       spreadsheetId: this.spreadsheetId,
@@ -437,6 +524,7 @@ class GoogleSheetsDB {
 
   async getSettings() {
     this._ensureConnected();
+    if (this.isDemoMode) return { ...CONFIG.DEFAULTS };
 
     const cacheKey = 'settings';
     const cached = this._getCache(cacheKey, CONFIG.CACHE.SETTINGS);
@@ -498,7 +586,7 @@ class GoogleSheetsDB {
   }
 
   _ensureConnected() {
-    if (!this.spreadsheetId) {
+    if (!this.spreadsheetId && !this.isDemoMode) {
       throw new Error('미용실에 연결되지 않았습니다.');
     }
   }

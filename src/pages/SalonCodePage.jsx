@@ -90,6 +90,18 @@ export default function SalonCodePage() {
           {t('back') || 'Back'}
         </button>
       </form>
+
+      {/* Demo hint */}
+      <div className="mt-8 pt-6 border-t border-slate-100 text-center">
+        <p className="text-xs text-slate-400 mb-2">Want to try a demo?</p>
+        <button
+          type="button"
+          onClick={() => { setCode('DEMO1234'); }}
+          className="text-sm font-semibold text-primary hover:text-primary-dark transition-colors"
+        >
+          Use code: DEMO1234
+        </button>
+      </div>
     </>
   );
 
