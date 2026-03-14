@@ -13,6 +13,28 @@ const SERVICE_CATS = [
   { keywords: ['커트', 'cut', 'Cut', 'Trim', 'trim', '레이어', '컷'], label: 'Cut', color: '#3b82f6' },
   { keywords: ['클리닉', '트리트먼트', 'Treatment', 'treatment', '케라틴', '스파', 'spa', '스케일링', '영양', '두피'], label: 'Care', color: '#10b981' },
 ];
+function getCustomerLevel(totalSpent) {
+  if (totalSpent >= 1000000) return { label: 'Diamond', short: 'D', icon: 'diamond', color: '#8b5cf6', bg: 'bg-violet-50', ring: 'ring-violet-200' };
+  if (totalSpent >= 500000) return { label: 'Gold', short: 'G', icon: 'star', color: '#f59e0b', bg: 'bg-amber-50', ring: 'ring-amber-200' };
+  if (totalSpent >= 200000) return { label: 'Silver', short: 'S', icon: 'workspace_premium', color: '#64748b', bg: 'bg-slate-100', ring: 'ring-slate-200' };
+  return { label: 'Bronze', short: 'B', icon: 'loyalty', color: '#d97706', bg: 'bg-orange-50', ring: 'ring-orange-200' };
+}
+
+function getCustomerTotalSpent(customerId, visits) {
+  return visits.filter(v => v.customerId === customerId).reduce((s, v) => s + (Number(v.amount) || 0), 0);
+}
+
+function getCustomerCats(customerId, visits) {
+  const custVisits = visits.filter(v => v.customerId === customerId);
+  const cats = [];
+  const seen = new Set();
+  for (let i = custVisits.length - 1; i >= 0 && cats.length < 3; i--) {
+    const cat = getServiceCat(custVisits[i].service);
+    if (!seen.has(cat.label)) { seen.add(cat.label); cats.push(cat); }
+  }
+  return cats;
+}
+
 function getServiceCat(name) {
   for (const cat of SERVICE_CATS) {
     if (cat.keywords.some(k => (name || '').includes(k))) return cat;
@@ -68,6 +90,7 @@ export default function AdminDashboardPage() {
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [recentVisits, setRecentVisits] = useState([]);
   const [allVisits, setAllVisits] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
   const [chartPeriod, setChartPeriod] = useState('weekly');
@@ -95,11 +118,13 @@ export default function AdminDashboardPage() {
   const loadDashboard = async () => {
     try {
       showLoading(t('loadingData'));
-      const [allCustomers, dashStats, fetchedVisits] = await Promise.all([
+      const [allCustomers, dashStats, fetchedVisits, fetchedBookings] = await Promise.all([
         sheetsDB.getAllCustomers(),
         sheetsDB.getDashboardStats(),
-        sheetsDB.getAllVisits()
+        sheetsDB.getAllVisits(),
+        sheetsDB.getAllBookings()
       ]);
+      setBookings(fetchedBookings.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
 
       setCustomers(allCustomers);
       setFilteredCustomers(allCustomers);
@@ -205,26 +230,40 @@ export default function AdminDashboardPage() {
               </div>
               {/* Customer List */}
               <div className="space-y-2">
-                {filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    onClick={() => handleCustomerClick(customer.id)}
-                    className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer active:bg-slate-50 transition-colors"
-                  >
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-accent to-rose-accent flex items-center justify-center text-white font-bold text-sm shrink-0">
-                      {customer.name?.charAt(0)}
+                {filteredCustomers.map((customer) => {
+                  const totalSpent = getCustomerTotalSpent(customer.id, allVisits);
+                  const level = getCustomerLevel(totalSpent);
+                  const cats = getCustomerCats(customer.id, allVisits);
+                  return (
+                    <div
+                      key={customer.id}
+                      onClick={() => handleCustomerClick(customer.id)}
+                      className="flex items-center gap-3 bg-white p-4 rounded-xl shadow-sm border border-slate-100 cursor-pointer active:bg-slate-50 transition-colors"
+                    >
+                      <div className={`w-11 h-11 rounded-full ${level.bg} ring-2 ${level.ring} flex items-center justify-center shrink-0`}>
+                        <span className="text-sm font-black" style={{ color: level.color }}>{level.short}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-bold truncate">{customer.name}</p>
+                          {cats.map((cat, ci) => (
+                            <div key={ci} className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} title={cat.label} />
+                          ))}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className="text-[10px] font-bold" style={{ color: level.color }}>{level.label} Class</span>
+                          <span className="text-slate-200">·</span>
+                          <span className="text-[10px] text-slate-400">{customer.phone}</span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm font-bold">{formatNumber(Math.round(totalSpent / 10000))}<span className="text-[10px] text-slate-400 ml-0.5">만</span></p>
+                        <p className="text-[10px] text-slate-400">{customer.visitCount || 0}회</p>
+                      </div>
+                      <span className="material-symbols-outlined text-slate-300 text-lg">chevron_right</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{customer.name}</p>
-                      <p className="text-xs text-slate-500">{customer.phone}</p>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <p className="text-sm font-bold">{formatNumber(customer.points || 0)}P</p>
-                      <p className="text-[10px] text-slate-400">{customer.visitCount || 0} {t('visits') || 'visits'}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-slate-300 text-lg">chevron_right</span>
-                  </div>
-                ))}
+                  );
+                })}
                 {filteredCustomers.length === 0 && (
                   <div className="text-center py-16 text-slate-300">
                     <span className="material-symbols-outlined text-4xl mb-2">person_search</span>
@@ -500,14 +539,17 @@ export default function AdminDashboardPage() {
 
                 const curvePath = smoothLine(pts);
                 const areaPath = curvePath + ` L${pts[pts.length - 1].x},${padT + chartH} L${pts[0].x},${padT + chartH} Z`;
-                const dotR = chartPeriod === 'weekly' ? 9 : 7;
-                const innerR = chartPeriod === 'weekly' ? 5 : 4;
+                const dotR = chartPeriod === 'weekly' ? 8 : 6;
+
+                // 각 포인트의 최다 판매 카테고리 색상
+                const topCatColors = pieDatas.map(pie => {
+                  const sorted = [...pie].filter(s => s.value > 0).sort((a, b) => b.value - a.value);
+                  return sorted[0] || { label: 'Other', color: '#94a3b8', value: 0 };
+                });
 
                 // 최고/최저 매출 인덱스
                 const maxIdx = valuesMan.indexOf(Math.max(...valuesMan));
                 const minIdx = valuesMan.indexOf(Math.min(...valuesMan));
-                const maxTopCat = [...pieDatas[maxIdx]].filter(s => s.value > 0).sort((a, b) => b.value - a.value)[0];
-                const minTopCat = [...pieDatas[minIdx]].filter(s => s.value > 0).sort((a, b) => b.value - a.value)[0];
 
                 return (
                   <>
@@ -525,65 +567,69 @@ export default function AdminDashboardPage() {
                         <svg className="w-full h-full" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
                           <defs>
                             <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
-                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.12" />
+                              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.08" />
                               <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                             </linearGradient>
-                            <filter id="dotShadow" x="-50%" y="-50%" width="200%" height="200%">
-                              <feDropShadow dx="0" dy="0.5" stdDeviation="1" floodColor="#000" floodOpacity="0.1" />
+                            {/* 수채화 필터 */}
+                            <filter id="watercolor" x="-40%" y="-40%" width="180%" height="180%">
+                              <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="blur" />
+                              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+                              <feDisplacementMap in="blur" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+                              <feComposite in="displaced" in2="SourceGraphic" operator="atop" />
+                            </filter>
+                            <filter id="wcGlow" x="-60%" y="-60%" width="220%" height="220%">
+                              <feGaussianBlur stdDeviation="3" result="glow" />
+                              <feMerge>
+                                <feMergeNode in="glow" />
+                                <feMergeNode in="SourceGraphic" />
+                              </feMerge>
                             </filter>
                           </defs>
                           {yTicks.map((tick, i) => (
                             i > 0 ? <line key={i} stroke="#f1f5f9" strokeWidth="0.5" x1={padL} x2={W - padR} y1={tick.y} y2={tick.y} /> : null
                           ))}
                           <path fill="url(#chartFill)" d={areaPath} />
-                          <path d={curvePath} fill="none" stroke="#8b5cf6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-                          {/* Mini donut pie around each dot */}
-                          {pts.map((p, i) => (
-                            <g key={i} filter="url(#dotShadow)" className="cursor-pointer"
-                              onMouseEnter={() => setHoveredDot({ idx: i, x: p.x / W * 100, y: p.y / H * 100, label: labels[i], pie: pieDatas[i], total: valuesMan[i] })}>
-                              {/* 최고/최저 강조 링 */}
-                              {i === maxIdx && <circle cx={p.x} cy={p.y} r={dotR + 3} fill="none" stroke="#ef4444" strokeWidth="1.2" strokeDasharray="2 1.5" opacity="0.7" />}
-                              {i === minIdx && <circle cx={p.x} cy={p.y} r={dotR + 3} fill="none" stroke="#3b82f6" strokeWidth="1.2" strokeDasharray="2 1.5" opacity="0.7" />}
-                              <circle cx={p.x} cy={p.y} r={dotR + 0.5} fill="white" opacity="0.6" />
-                              {miniDonutArcs(p.x, p.y, dotR, innerR, pieDatas[i])}
-                              <circle cx={p.x} cy={p.y} r={innerR} fill="white" />
-                              <circle cx={p.x} cy={p.y} r="1.2" fill="#8b5cf6" opacity="0.5" />
-                              {/* 투명한 큰 hit area */}
-                              <circle cx={p.x} cy={p.y} r={dotR + 4} fill="transparent" />
-                            </g>
-                          ))}
-                          {/* Peak — 빨간 붓펜 상승 화살표 */}
-                          <g>
-                            <path d={`M${pts[maxIdx].x} ${pts[maxIdx].y - dotR - 4} l0 -12`}
-                              stroke="#ef4444" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-                            <path d={`M${pts[maxIdx].x - 3.5} ${pts[maxIdx].y - dotR - 12} l3.5 -5 l3.5 5`}
-                              stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7" />
-                            <text x={pts[maxIdx].x} y={pts[maxIdx].y - dotR - 23} textAnchor="middle" fill="#ef4444" fontSize="5.5" fontWeight="600" opacity="0.9">
-                              {valuesMan[maxIdx]}만
-                            </text>
-                          </g>
-                          {/* Low — 파란 붓펜 하강 화살표 */}
-                          <g>
-                            <path d={`M${pts[minIdx].x} ${pts[minIdx].y + dotR + 4} l0 12`}
-                              stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-                            <path d={`M${pts[minIdx].x - 3.5} ${pts[minIdx].y + dotR + 12} l3.5 5 l3.5 -5`}
-                              stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.7" />
-                            <text x={pts[minIdx].x} y={pts[minIdx].y + dotR + 27} textAnchor="middle" fill="#3b82f6" fontSize="5.5" fontWeight="600" opacity="0.9">
-                              {valuesMan[minIdx]}만
-                            </text>
-                          </g>
+                          <path d={curvePath} fill="none" stroke="#8b5cf6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.2" opacity="0.6" />
+                          {/* 수채화 동그라미 */}
+                          {pts.map((p, i) => {
+                            const col = topCatColors[i].color;
+                            const isMax = i === maxIdx;
+                            const isMin = i === minIdx;
+                            const r = isMax || isMin ? dotR + 2 : dotR;
+                            return (
+                              <g key={i} className="cursor-pointer"
+                                onMouseEnter={() => setHoveredDot({ idx: i, x: p.x / W * 100, y: p.y / H * 100, label: labels[i], pie: pieDatas[i], total: valuesMan[i] })}>
+                                {/* 수채화 번짐 (glow) */}
+                                <circle cx={p.x} cy={p.y} r={r + 4} fill={col} opacity="0.12" filter="url(#wcGlow)" />
+                                {/* 수채화 메인 원 */}
+                                <circle cx={p.x} cy={p.y} r={r} fill={col} opacity="0.55" filter="url(#watercolor)" />
+                                {/* 중심 하이라이트 */}
+                                <circle cx={p.x - 1} cy={p.y - 1} r={r * 0.35} fill="white" opacity="0.5" />
+                                {/* Peak/Low 표시 */}
+                                {isMax && <>
+                                  <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
+                                  <text x={p.x} y={p.y - r - 8} textAnchor="middle" fill="#ef4444" fontSize="5.5" fontWeight="700" opacity="0.85">{valuesMan[i]}만</text>
+                                  <text x={p.x} y={p.y - r - 15} textAnchor="middle" fill="#ef4444" fontSize="4.5" fontWeight="800" opacity="0.7">Peak</text>
+                                </>}
+                                {isMin && <>
+                                  <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
+                                  <text x={p.x} y={p.y + r + 12} textAnchor="middle" fill="#3b82f6" fontSize="5.5" fontWeight="700" opacity="0.85">{valuesMan[i]}만</text>
+                                  <text x={p.x} y={p.y + r + 19} textAnchor="middle" fill="#3b82f6" fontSize="4.5" fontWeight="800" opacity="0.7">Low</text>
+                                </>}
+                                {/* hit area */}
+                                <circle cx={p.x} cy={p.y} r={r + 6} fill="transparent" />
+                              </g>
+                            );
+                          })}
                         </svg>
                         {/* Hover 툴팁 */}
                         {hoveredDot && (() => {
-                          const top = pieDatas[hoveredDot.idx]
-                            .filter(s => s.value > 0)
-                            .sort((a, b) => b.value - a.value)[0];
-                          if (!top) return null;
-                          const topMan = Math.round(top.value / 10000);
+                          const sorted = [...pieDatas[hoveredDot.idx]].filter(s => s.value > 0).sort((a, b) => b.value - a.value);
+                          if (!sorted.length) return null;
                           const isRight = hoveredDot.x > 70;
                           return (
                             <div
-                              className="absolute z-20 pointer-events-none bg-white rounded-xl shadow-lg border border-slate-100 px-3 py-2.5 min-w-[120px]"
+                              className="absolute z-20 pointer-events-none bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-slate-100 px-3 py-2.5 min-w-[120px]"
                               style={{
                                 left: isRight ? 'auto' : `${hoveredDot.x}%`,
                                 right: isRight ? `${100 - hoveredDot.x}%` : 'auto',
@@ -591,17 +637,12 @@ export default function AdminDashboardPage() {
                                 transform: isRight ? 'translateX(-4px)' : 'translateX(4px)',
                               }}
                             >
-                              <p className="text-[10px] text-slate-400 font-semibold mb-1">{hoveredDot.label} · {hoveredDot.total}만원</p>
-                              <div className="flex items-center gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: top.color }} />
-                                <span className="text-xs font-bold text-slate-800">{top.label}</span>
-                                <span className="text-xs text-slate-500">{topMan}만원</span>
-                              </div>
-                              {pieDatas[hoveredDot.idx].filter(s => s.value > 0).slice(1, 3).map((s, si) => (
+                              <p className="text-[10px] text-slate-400 font-semibold mb-1.5">{hoveredDot.label} · {hoveredDot.total}만원</p>
+                              {sorted.slice(0, 3).map((s, si) => (
                                 <div key={si} className="flex items-center gap-1.5 mt-0.5">
-                                  <div className="w-2 h-2 rounded-full opacity-60" style={{ backgroundColor: s.color }} />
-                                  <span className="text-[10px] text-slate-500">{s.label}</span>
-                                  <span className="text-[10px] text-slate-400">{Math.round(s.value / 10000)}만</span>
+                                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color, opacity: si === 0 ? 1 : 0.5 }} />
+                                  <span className={`text-xs ${si === 0 ? 'font-bold text-slate-800' : 'text-slate-500'}`}>{s.label}</span>
+                                  <span className="text-xs text-slate-400">{Math.round(s.value / 10000)}만</span>
                                 </div>
                               ))}
                             </div>
@@ -623,86 +664,6 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    {/* 이주 / 이번년 분포 오버레이 도넛 */}
-                    {(() => {
-                      // 이번 주 aggregate
-                      const weekAgg = { Color: 0, Perm: 0, Cut: 0, Care: 0 };
-                      const yearAgg = { Color: 0, Perm: 0, Cut: 0, Care: 0 };
-
-                      if (chartPeriod === 'weekly') {
-                        // 주간: 전체 7일 합산 = 이번주
-                        periodVisits.forEach(visits => {
-                          visits.forEach(v => {
-                            const cat = getServiceCat(v.service);
-                            if (weekAgg[cat.label] !== undefined) weekAgg[cat.label] += (Number(v.amount) || 0);
-                          });
-                        });
-                        // 이번 해: allVisits 전체
-                        const curYear = String(new Date().getFullYear());
-                        const yearVisitsArr = sheetsDB.isDemoMode
-                          ? dummyMonthlyData.flatMap(m => m.visits)
-                          : allVisits.filter(v => v.date && v.date.startsWith(curYear));
-                        yearVisitsArr.forEach(v => {
-                          const cat = getServiceCat(v.service);
-                          if (yearAgg[cat.label] !== undefined) yearAgg[cat.label] += (Number(v.amount) || 0);
-                        });
-                      } else {
-                        // 월간: 이번주 = 직접 계산
-                        const nowD = new Date();
-                        const dow = nowD.getDay() || 7;
-                        const mon = new Date(nowD); mon.setDate(nowD.getDate() - dow + 1);
-                        const wkDates = [];
-                        for (let i = 0; i < 7; i++) { const dd = new Date(mon); dd.setDate(mon.getDate() + i); wkDates.push(dd.toISOString().slice(0, 10)); }
-                        if (sheetsDB.isDemoMode) {
-                          const demoWk = dummyMonthlyData[11]?.visits || [];
-                          demoWk.forEach(v => { const cat = getServiceCat(v.service); if (weekAgg[cat.label] !== undefined) weekAgg[cat.label] += (Number(v.amount) || 0); });
-                        } else {
-                          allVisits.filter(v => v.date && wkDates.includes(v.date)).forEach(v => {
-                            const cat = getServiceCat(v.service); if (weekAgg[cat.label] !== undefined) weekAgg[cat.label] += (Number(v.amount) || 0);
-                          });
-                        }
-                        // 이번 해: 12개월 전체 합산
-                        periodVisits.forEach(visits => {
-                          visits.forEach(v => {
-                            const cat = getServiceCat(v.service);
-                            if (yearAgg[cat.label] !== undefined) yearAgg[cat.label] += (Number(v.amount) || 0);
-                          });
-                        });
-                      }
-
-                      const weekSegs = SERVICE_CATS.map(c => ({ label: c.label, color: c.color, value: weekAgg[c.label] }));
-                      const yearSegs = SERVICE_CATS.map(c => ({ label: c.label, color: c.color, value: yearAgg[c.label] }));
-                      const weekTotal = weekSegs.reduce((s, x) => s + x.value, 0);
-                      const yearTotal = yearSegs.reduce((s, x) => s + x.value, 0);
-
-                      const OverlayDonut = ({ segs, total, title }) => {
-                        const R = 36, IR = 22;
-                        const size = R * 2 + 4;
-                        return (
-                          <div className="flex flex-col items-center">
-                            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                              <circle cx={size / 2} cy={size / 2} r={R} fill="white" opacity="0.85" />
-                              {miniDonutArcs(size / 2, size / 2, R, IR, segs, 0.06)}
-                              <circle cx={size / 2} cy={size / 2} r={IR} fill="white" />
-                              <text x={size / 2} y={size / 2 - 3} textAnchor="middle" fill="#334155" fontSize="8" fontWeight="800">
-                                {total > 0 ? `${Math.round(total / 10000)}` : '0'}
-                              </text>
-                              <text x={size / 2} y={size / 2 + 6} textAnchor="middle" fill="#94a3b8" fontSize="5.5" fontWeight="600">
-                                만원
-                              </text>
-                            </svg>
-                            <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">{title}</span>
-                          </div>
-                        );
-                      };
-
-                      return (
-                        <div className="flex justify-center gap-6 lg:gap-10 mt-4 pt-4 border-t border-slate-50">
-                          <OverlayDonut segs={weekSegs} total={weekTotal} title="This Week" />
-                          <OverlayDonut segs={yearSegs} total={yearTotal} title="This Year" />
-                        </div>
-                      );
-                    })()}
                     {/* 최고/최저 매출 인사이트 */}
                     <div className="flex gap-3 mt-5 pt-5 border-t border-slate-50">
                       {/* Peak */}
@@ -721,11 +682,11 @@ export default function AdminDashboardPage() {
                           <span className="text-[10px] text-red-400 font-medium">{labels[maxIdx]}</span>
                         </div>
                         <p className="text-xl font-extrabold text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                        {maxTopCat && (
+                        {topCatColors[maxIdx] && (
                           <div className="flex items-center gap-1.5 mt-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: maxTopCat.color }} />
-                            <span className="text-[11px] font-semibold text-slate-600">{maxTopCat.label}</span>
-                            <span className="text-[11px] text-slate-400">{Math.round(maxTopCat.value / 10000)}만</span>
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[maxIdx].color }} />
+                            <span className="text-[11px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
+                            <span className="text-[11px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
                           </div>
                         )}
                       </div>
@@ -745,11 +706,11 @@ export default function AdminDashboardPage() {
                           <span className="text-[10px] text-blue-400 font-medium">{labels[minIdx]}</span>
                         </div>
                         <p className="text-xl font-extrabold text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                        {minTopCat && (
+                        {topCatColors[minIdx] && (
                           <div className="flex items-center gap-1.5 mt-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: minTopCat.color }} />
-                            <span className="text-[11px] font-semibold text-slate-600">{minTopCat.label}</span>
-                            <span className="text-[11px] text-slate-400">{Math.round(minTopCat.value / 10000)}만</span>
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[minIdx].color }} />
+                            <span className="text-[11px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
+                            <span className="text-[11px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
                           </div>
                         )}
                       </div>
@@ -759,51 +720,277 @@ export default function AdminDashboardPage() {
               })()}
           </section>
 
-          {/* Top Customers */}
-          <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
-            <div className="flex items-center justify-between mb-4 lg:mb-6">
-              <h2 className="text-base lg:text-lg font-bold">{t('topCustomers') || 'Top Customers'}</h2>
-              <button className="text-rose-accent text-xs font-semibold hover:underline">View all</button>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-              {customers.slice(0, 4).map((customer) => (
-                <div
-                  key={customer.id}
-                  className="flex items-center justify-between cursor-pointer hover:bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-50 transition-colors"
-                  onClick={() => handleCustomerClick(customer.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent to-rose-accent flex items-center justify-center text-white font-bold text-sm">
-                      {customer.name?.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold">{customer.name}</p>
-                      <p className="text-xs text-slate-500">{customer.visitCount || 0} Appointments</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">{formatNumber(customer.points || 0)}P</p>
-                    <p className="text-[10px] text-emerald-500 font-bold uppercase">
-                      {(customer.visitCount || 0) >= 10 ? 'VIP' : 'Regular'}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {customers.length === 0 && (
-                <div className="text-center py-8 text-slate-300 col-span-2">
-                  <span className="material-symbols-outlined text-3xl mb-2">group</span>
-                  <p className="text-sm text-slate-400">{t('noCustomers') || 'No customers yet'}</p>
-                </div>
-              )}
-            </div>
-          </section>
+          {/* Top & At-Risk Customers */}
+          {(() => {
+            // Top 5: 총 매출 기준
+            const topCustomers = [...customers]
+              .sort((a, b) => getCustomerTotalSpent(b.id, allVisits) - getCustomerTotalSpent(a.id, allVisits))
+              .slice(0, 5);
 
-          {/* Recent Bookings - card list on mobile, table on desktop */}
+            // At-Risk 분석
+            const today = new Date();
+            const atRiskList = customers.map(c => {
+              const cVisits = allVisits
+                .filter(v => v.customerId === c.id)
+                .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+              const lastVisitDate = cVisits[0]?.date ? new Date(cVisits[0].date) : null;
+              const daysSince = lastVisitDate ? Math.floor((today - lastVisitDate) / 86400000) : 999;
+              const totalSpent = getCustomerTotalSpent(c.id, allVisits);
+              const visitCount = c.visitCount || 0;
+
+              // 평균 방문 주기 계산
+              let avgInterval = 30;
+              if (cVisits.length >= 2) {
+                const dates = cVisits.map(v => new Date(v.date)).sort((a, b) => a - b);
+                const intervals = [];
+                for (let i = 1; i < dates.length; i++) intervals.push((dates[i] - dates[i - 1]) / 86400000);
+                avgInterval = Math.round(intervals.reduce((s, x) => s + x, 0) / intervals.length);
+              }
+
+              // 서비스 히스토리 분석
+              const colorVisits = cVisits.filter(v => getServiceCat(v.service).label === 'Color');
+              const permVisits = cVisits.filter(v => getServiceCat(v.service).label === 'Perm');
+              const cutVisits = cVisits.filter(v => getServiceCat(v.service).label === 'Cut');
+              const careVisits = cVisits.filter(v => getServiceCat(v.service).label === 'Care');
+              const lastColorDate = colorVisits[0]?.date ? new Date(colorVisits[0].date) : null;
+              const lastPermDate = permVisits[0]?.date ? new Date(permVisits[0].date) : null;
+              const lastCareDate = careVisits[0]?.date ? new Date(careVisits[0].date) : null;
+              const daysSinceColor = lastColorDate ? Math.floor((today - lastColorDate) / 86400000) : 999;
+              const daysSincePerm = lastPermDate ? Math.floor((today - lastPermDate) / 86400000) : 999;
+              const daysSinceCare = lastCareDate ? Math.floor((today - lastCareDate) / 86400000) : 999;
+
+              // 고객 성향 파악
+              const isColorLover = colorVisits.length >= 2;
+              const isPermLover = permVisits.length >= 2;
+              const isHighSpender = totalSpent >= 500000;
+              const isTrendSensitive = cVisits.length >= 4 && [...new Set(cVisits.map(v => v.service))].length >= 4;
+
+              // 위험 점수 & 이유 & 조언
+              let riskScore = 0;
+              const reasons = [];
+              const coupons = [];
+
+              // 1) 오래 안옴
+              if (daysSince > avgInterval * 2) {
+                riskScore += 40;
+                reasons.push({ icon: 'schedule', text: `${daysSince}일째 미방문 (평균 ${avgInterval}일 주기)`, severity: 'high' });
+                coupons.push({ type: 'winback', text: `"${c.name}님, 오랜만이에요!" Win-back 20% 쿠폰`, icon: 'replay' });
+              } else if (daysSince > avgInterval * 1.5) {
+                riskScore += 20;
+                reasons.push({ icon: 'schedule', text: `${daysSince}일 미방문 — 주기보다 늦어지는 중`, severity: 'mid' });
+                coupons.push({ type: 'loyalty', text: `재방문 감사 10% 할인 쿠폰`, icon: 'favorite' });
+              }
+
+              // 2) 염색 고객: 뿌리 리터치 시기
+              if (isColorLover && daysSinceColor > 35) {
+                riskScore += 25;
+                reasons.push({ icon: 'palette', text: `염색한 지 ${daysSinceColor}일 — 뿌리 리터치 시기`, severity: daysSinceColor > 60 ? 'high' : 'mid' });
+                coupons.push({ type: 'special', text: `뿌리 염색 15% 할인 쿠폰 + 문자 알림`, icon: 'palette' });
+              }
+
+              // 3) 펌 고객: 펌 유지 시기
+              if (isPermLover && daysSincePerm > 75) {
+                riskScore += 20;
+                reasons.push({ icon: 'waves', text: `펌한 지 ${daysSincePerm}일 — 컬 유지/리펌 시기`, severity: 'mid' });
+                coupons.push({ type: 'special', text: `리펌 or 셋팅 20% 할인 쿠폰`, icon: 'waves' });
+              }
+
+              // 4) 트렌드 민감 고객: 신규 스타일 추천
+              if (isTrendSensitive && daysSince > 21) {
+                riskScore += 15;
+                reasons.push({ icon: 'trending_up', text: '다양한 시술 경험 — 트렌드에 민감', severity: 'low' });
+                coupons.push({ type: 'special', text: `이달의 신규 스타일 체험 쿠폰`, icon: 'auto_awesome' });
+              }
+
+              // 5) 방문 빈도 감소
+              if (cVisits.length >= 6) {
+                const recent3 = cVisits.slice(0, 3).map(v => new Date(v.date));
+                const prev3 = cVisits.slice(3, 6).map(v => new Date(v.date));
+                const recentSpan = (recent3[0] - recent3[2]) / 86400000;
+                const prevSpan = (prev3[0] - prev3[2]) / 86400000;
+                if (recentSpan > prevSpan * 1.8) {
+                  riskScore += 25;
+                  reasons.push({ icon: 'trending_down', text: '방문 간격이 점점 넓어지고 있음', severity: 'mid' });
+                }
+              }
+
+              // 6) 매출 감소
+              if (cVisits.length >= 4) {
+                const recent2Amt = cVisits.slice(0, 2).reduce((s, v) => s + (Number(v.amount) || 0), 0);
+                const prev2Amt = cVisits.slice(2, 4).reduce((s, v) => s + (Number(v.amount) || 0), 0);
+                if (prev2Amt > 0 && recent2Amt < prev2Amt * 0.6) {
+                  riskScore += 20;
+                  reasons.push({ icon: 'savings', text: '이전보다 낮은 금액 시술만 이용', severity: 'mid' });
+                  coupons.push({ type: 'special', text: `프리미엄 시술 체험 쿠폰`, icon: 'auto_awesome' });
+                }
+              }
+
+              // 7) 고가치 고객 이탈 위험
+              if (isHighSpender && daysSince > 45) {
+                riskScore += 15;
+                reasons.push({ icon: 'diamond', text: `누적 ${Math.round(totalSpent / 10000)}만원 고객 — VIP 관리 필요`, severity: 'high' });
+                if (!coupons.some(cp => cp.type === 'special')) coupons.push({ type: 'special', text: `VIP 전용 특별 서비스 쿠폰`, icon: 'star' });
+              }
+
+              // 8) 클리닉/케어 주기
+              if (careVisits.length >= 1 && daysSinceCare > 40) {
+                riskScore += 10;
+                reasons.push({ icon: 'spa', text: `마지막 케어 ${daysSinceCare}일 전 — 관리 주기 지남`, severity: 'low' });
+                coupons.push({ type: 'special', text: `두피/모발 클리닉 할인 쿠폰`, icon: 'spa' });
+              }
+
+              // 9) 생일 놓침
+              if (c.birthday) {
+                const bMonth = parseInt(c.birthday.substring(0, 2));
+                const thisMonth = today.getMonth() + 1;
+                if (bMonth === thisMonth && daysSince > 14) {
+                  riskScore += 10;
+                  reasons.push({ icon: 'cake', text: `이번달 생일! 축하 연락 필요`, severity: 'low' });
+                  coupons.push({ type: 'birthday', text: `생일 축하 1만원 쿠폰 + 문자`, icon: 'cake' });
+                }
+              }
+
+              // 10) 커트만 하는 고객: 업셀링 기회
+              if (cutVisits.length >= 3 && colorVisits.length === 0 && permVisits.length === 0 && daysSince > 25) {
+                riskScore += 10;
+                reasons.push({ icon: 'content_cut', text: '커트만 이용 — 컬러/펌 경험 없음', severity: 'low' });
+                coupons.push({ type: 'special', text: `첫 염색/펌 30% 할인 체험 쿠폰`, icon: 'palette' });
+              }
+
+              if (coupons.length === 0 && riskScore > 0) {
+                coupons.push({ type: 'loyalty', text: '재방문 감사 쿠폰', icon: 'favorite' });
+              }
+
+              return { ...c, daysSince, riskScore, reasons, coupons, totalSpent, lastVisit: cVisits[0]?.date || null };
+            })
+              .filter(c => c.riskScore > 0)
+              .sort((a, b) => b.riskScore - a.riskScore)
+              .slice(0, 5);
+
+            return (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
+                {/* Top 5 */}
+                <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-amber-500 text-lg">emoji_events</span>
+                    <h2 className="text-base font-bold">Top Customers</h2>
+                  </div>
+                  <div className="space-y-2">
+                    {topCustomers.map((customer, idx) => {
+                      const totalSpent = getCustomerTotalSpent(customer.id, allVisits);
+                      const level = getCustomerLevel(totalSpent);
+                      const cats = getCustomerCats(customer.id, allVisits);
+                      return (
+                        <div
+                          key={customer.id}
+                          onClick={() => handleCustomerClick(customer.id)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors border border-slate-50"
+                        >
+                          <span className="text-[11px] font-black text-slate-300 w-4">{idx + 1}</span>
+                          <div className={`w-9 h-9 rounded-full ${level.bg} ring-2 ${level.ring} flex items-center justify-center shrink-0`}>
+                            <span className="text-[10px] font-black" style={{ color: level.color }}>{level.short}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1">
+                              <p className="text-sm font-bold truncate">{customer.name}</p>
+                              {cats.map((cat, ci) => (
+                                <div key={ci} className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                              ))}
+                            </div>
+                            <span className="text-[10px] font-bold" style={{ color: level.color }}>{level.label} Class</span>
+                          </div>
+                          <p className="text-sm font-bold shrink-0">{formatNumber(Math.round(totalSpent / 10000))}<span className="text-[10px] text-slate-400">만</span></p>
+                        </div>
+                      );
+                    })}
+                    {customers.length === 0 && (
+                      <div className="text-center py-8 text-slate-300">
+                        <span className="material-symbols-outlined text-3xl mb-2">group</span>
+                        <p className="text-sm text-slate-400">{t('noCustomers') || 'No customers yet'}</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* At-Risk 5 */}
+                <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-red-100/50">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-red-400 text-lg">warning</span>
+                    <h2 className="text-base font-bold">At-Risk Customers</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {atRiskList.map((c) => {
+                      const level = getCustomerLevel(c.totalSpent);
+                      const severityColor = c.riskScore >= 40 ? '#ef4444' : c.riskScore >= 20 ? '#f59e0b' : '#64748b';
+                      return (
+                        <div key={c.id} className="rounded-xl border border-slate-100 overflow-hidden">
+                          {/* Header */}
+                          <div
+                            className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-colors"
+                            onClick={() => handleCustomerClick(c.id)}
+                          >
+                            <div className="relative">
+                              <div className={`w-9 h-9 rounded-full ${level.bg} ring-2 ${level.ring} flex items-center justify-center shrink-0`}>
+                                <span className="text-[10px] font-black" style={{ color: level.color }}>{level.short}</span>
+                              </div>
+                              <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ backgroundColor: severityColor }}>
+                                <span className="material-symbols-outlined text-white text-[8px]">priority_high</span>
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold truncate">{c.name}</p>
+                              <span className="text-[10px] text-slate-400">마지막 방문: {c.lastVisit || '없음'}</span>
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: severityColor + '15', color: severityColor }}>
+                              {c.riskScore >= 40 ? 'High' : c.riskScore >= 20 ? 'Mid' : 'Low'}
+                            </span>
+                          </div>
+                          {/* Reasons */}
+                          <div className="px-3 pb-2 space-y-1">
+                            {c.reasons.map((r, ri) => (
+                              <div key={ri} className="flex items-center gap-2 py-1">
+                                <span className="material-symbols-outlined text-sm" style={{ color: r.severity === 'high' ? '#ef4444' : r.severity === 'mid' ? '#f59e0b' : '#94a3b8' }}>{r.icon}</span>
+                                <span className="text-[11px] text-slate-600">{r.text}</span>
+                              </div>
+                            ))}
+                          </div>
+                          {/* Coupon Strategy */}
+                          {c.coupons.length > 0 && (
+                            <div className="px-3 pb-3">
+                              {c.coupons.slice(0, 2).map((cp, ci) => (
+                                <button
+                                  key={ci}
+                                  onClick={(e) => { e.stopPropagation(); navigate('/admin/coupons'); }}
+                                  className="flex items-center gap-2 w-full mt-1 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg hover:bg-accent/10 transition-colors text-left"
+                                >
+                                  <span className="material-symbols-outlined text-accent text-sm">{cp.icon}</span>
+                                  <span className="text-[11px] font-semibold text-accent flex-1">{cp.text}</span>
+                                  <span className="material-symbols-outlined text-accent/50 text-sm">arrow_forward</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {atRiskList.length === 0 && (
+                      <div className="text-center py-8 text-slate-300">
+                        <span className="material-symbols-outlined text-3xl mb-2">verified</span>
+                        <p className="text-sm text-emerald-500 font-medium">모든 고객이 건강합니다!</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
+            );
+          })()}
+
+          {/* Bookings */}
           <section className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
             <div className="px-5 lg:px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-base lg:text-lg font-bold">{t('recentBookings') || 'Recent Bookings'}</h2>
+              <h2 className="text-base lg:text-lg font-bold">Bookings</h2>
               <button
-                onClick={() => navigate('/admin/ai-analysis')}
+                onClick={() => navigate('/booking')}
                 className="bg-accent hover:bg-accent/90 text-white px-3 lg:px-4 py-2 rounded-lg text-xs lg:text-sm font-medium transition-colors flex items-center gap-1 lg:gap-2"
               >
                 <span className="material-symbols-outlined text-sm">add</span>
@@ -812,56 +999,65 @@ export default function AdminDashboardPage() {
               </button>
             </div>
 
-            {/* Mobile: card list */}
-            <div className="lg:hidden p-4 space-y-2">
-              {recentVisits.map((visit) => (
-                <div key={visit.id} className="flex items-center gap-3 bg-slate-50 rounded-xl px-4 py-3">
-                  <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center shadow-sm shrink-0">
-                    <span className="material-symbols-outlined text-accent text-[18px]">content_cut</span>
+            {/* 예약 리스트 */}
+            <div className="p-4 lg:p-5 space-y-2">
+              {bookings.filter(b => b.status !== 'cancelled').slice(0, 8).map((bk) => {
+                const statusMap = {
+                  pending: { label: 'Pending', color: '#f59e0b', bg: 'bg-amber-50 text-amber-700' },
+                  confirmed: { label: 'Confirmed', color: '#10b981', bg: 'bg-emerald-50 text-emerald-700' },
+                  completed: { label: 'Done', color: '#6366f1', bg: 'bg-indigo-50 text-indigo-700' },
+                };
+                const st = statusMap[bk.status] || statusMap.pending;
+                const isPast = bk.date < new Date().toISOString().split('T')[0];
+
+                return (
+                  <div key={bk.id} className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${isPast ? 'bg-slate-50/50 border-slate-100' : 'bg-white border-slate-100 hover:bg-slate-50'}`}>
+                    <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-accent text-lg">event</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-bold truncate">{bk.customerName || '(이름없음)'}</p>
+                        <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase ${st.bg}`}>{st.label}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-0.5">{bk.service} · {bk.date} {bk.time}</p>
+                      {bk.memo && <p className="text-[10px] text-slate-300 mt-0.5">"{bk.memo}"</p>}
+                    </div>
+                    {bk.status === 'pending' && (
+                      <div className="flex gap-1 shrink-0">
+                        <button
+                          onClick={async () => { await sheetsDB.updateBookingStatus(bk.id, 'confirmed'); setBookings(prev => prev.map(b => b.id === bk.id ? { ...b, status: 'confirmed' } : b)); showToast('예약 확정!'); }}
+                          className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center hover:bg-emerald-100 transition-colors"
+                          title="확정"
+                        >
+                          <span className="material-symbols-outlined text-emerald-600 text-base">check</span>
+                        </button>
+                        <button
+                          onClick={async () => { await sheetsDB.updateBookingStatus(bk.id, 'cancelled'); setBookings(prev => prev.map(b => b.id === bk.id ? { ...b, status: 'cancelled' } : b)); showToast('예약 취소'); }}
+                          className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center hover:bg-red-100 transition-colors"
+                          title="취소"
+                        >
+                          <span className="material-symbols-outlined text-red-400 text-base">close</span>
+                        </button>
+                      </div>
+                    )}
+                    {bk.status === 'confirmed' && !isPast && (
+                      <button
+                        onClick={async () => { await sheetsDB.updateBookingStatus(bk.id, 'completed'); setBookings(prev => prev.map(b => b.id === bk.id ? { ...b, status: 'completed' } : b)); showToast('완료 처리'); }}
+                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-bold hover:bg-indigo-100 transition-colors shrink-0"
+                      >
+                        완료
+                      </button>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{visit.service}</p>
-                    <p className="text-[11px] text-slate-400">{getCustomerName(visit.customerId)} · {visit.date}</p>
-                  </div>
-                  <p className="text-sm font-bold shrink-0">{formatNumber(visit.finalAmount || 0)}{t('won')}</p>
-                </div>
-              ))}
-              {recentVisits.length === 0 && (
+                );
+              })}
+              {bookings.filter(b => b.status !== 'cancelled').length === 0 && (
                 <div className="text-center py-10 text-slate-300">
                   <span className="material-symbols-outlined text-4xl">calendar_today</span>
-                  <p className="text-sm text-slate-400 mt-2">{t('noHistory') || 'No bookings yet'}</p>
+                  <p className="text-sm text-slate-400 mt-2">예약이 없습니다</p>
                 </div>
               )}
-            </div>
-
-            {/* Desktop: table */}
-            <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
-                    <th className="px-6 py-4">Service</th>
-                    <th className="px-6 py-4">Client</th>
-                    <th className="px-6 py-4">Date</th>
-                    <th className="px-6 py-4">Amount</th>
-                    <th className="px-6 py-4">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
-                  {recentVisits.map((visit) => (
-                    <tr key={visit.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-medium">{visit.service}</td>
-                      <td className="px-6 py-4">{getCustomerName(visit.customerId)}</td>
-                      <td className="px-6 py-4 text-slate-500">{visit.date}</td>
-                      <td className="px-6 py-4 font-bold">{formatNumber(visit.finalAmount || 0)}{t('won')}</td>
-                      <td className="px-6 py-4">
-                        <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-700">
-                          Completed
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </section>
           </div>
@@ -869,8 +1065,194 @@ export default function AdminDashboardPage() {
           </div>{/* end flex-1 main content */}
 
           {/* Desktop: Client sidebar */}
-          <aside className="hidden lg:block w-80 shrink-0 space-y-6">
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 sticky top-24">
+          <aside className="hidden lg:block w-80 shrink-0 space-y-4">
+            {/* Weekly/Monthly Insights */}
+            {(() => {
+              const today = new Date();
+              const dayOfWeek = today.getDay() || 7;
+              const monday = new Date(today); monday.setDate(today.getDate() - dayOfWeek + 1);
+              const prevMonday = new Date(monday); prevMonday.setDate(monday.getDate() - 7);
+
+              // 이번주 / 지난주 날짜
+              const thisWeekDates = [];
+              const lastWeekDates = [];
+              for (let i = 0; i < 7; i++) {
+                const tw = new Date(monday); tw.setDate(monday.getDate() + i); thisWeekDates.push(tw.toISOString().slice(0, 10));
+                const lw = new Date(prevMonday); lw.setDate(prevMonday.getDate() + i); lastWeekDates.push(lw.toISOString().slice(0, 10));
+              }
+
+              // 이번달 / 지난달
+              const thisYM = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+              const prevMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+              const prevYM = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+
+              // 카테고리별 집계
+              const countCats = (visits) => {
+                const cats = { Color: 0, Perm: 0, Cut: 0, Care: 0 };
+                visits.forEach(v => { const c = getServiceCat(v.service); if (cats[c.label] !== undefined) cats[c.label]++; });
+                return cats;
+              };
+              const revCats = (visits) => {
+                const cats = { Color: 0, Perm: 0, Cut: 0, Care: 0 };
+                visits.forEach(v => { const c = getServiceCat(v.service); if (cats[c.label] !== undefined) cats[c.label] += (Number(v.amount) || 0); });
+                return cats;
+              };
+
+              const twVisits = allVisits.filter(v => v.date && thisWeekDates.includes(v.date));
+              const lwVisits = allVisits.filter(v => v.date && lastWeekDates.includes(v.date));
+              const tmVisits = allVisits.filter(v => v.date && v.date.startsWith(thisYM));
+              const lmVisits = allVisits.filter(v => v.date && v.date.startsWith(prevYM));
+
+              const twCats = countCats(twVisits);
+              const lwCats = countCats(lwVisits);
+              const tmCats = countCats(tmVisits);
+              const lmCats = countCats(lmVisits);
+              const twRev = revCats(twVisits);
+              const lwRev = revCats(lwVisits);
+
+              // 인사이트 생성
+              const insights = [];
+
+              // 주간 카테고리 비교
+              SERVICE_CATS.forEach(cat => {
+                const tw = twCats[cat.label] || 0;
+                const lw = lwCats[cat.label] || 0;
+                if (lw > 0 && tw < lw * 0.6) {
+                  const drop = Math.round((1 - tw / lw) * 100);
+                  insights.push({
+                    type: 'warning',
+                    icon: 'trending_down',
+                    color: '#ef4444',
+                    title: `${cat.label} 고객 ${drop}% 감소`,
+                    desc: `이번주 ${tw}건 vs 지난주 ${lw}건`,
+                    advice: cat.label === 'Color' ? '날씨나 계절 영향일 수 있어요. 염색 할인 쿠폰으로 고객을 유도해보세요.'
+                      : cat.label === 'Perm' ? '펌 수요 감소 중. 시즌 트렌드 펌 프로모션을 고려해보세요.'
+                      : cat.label === 'Care' ? '클리닉 방문 감소. 두피 진단 무료 이벤트로 재방문을 유도하세요.'
+                      : '커트 손님이 줄었어요. 커트 + 케어 패키지 할인 쿠폰을 발행해보세요.',
+                    couponText: `${cat.label} ${drop > 40 ? '20%' : '10%'} 할인 쿠폰 발행`,
+                    couponIcon: cat.label === 'Color' ? 'palette' : cat.label === 'Perm' ? 'waves' : cat.label === 'Care' ? 'spa' : 'content_cut',
+                  });
+                } else if (lw > 0 && tw > lw * 1.3) {
+                  const up = Math.round((tw / lw - 1) * 100);
+                  insights.push({
+                    type: 'positive',
+                    icon: 'trending_up',
+                    color: '#10b981',
+                    title: `${cat.label} 고객 ${up}% 증가!`,
+                    desc: `이번주 ${tw}건 vs 지난주 ${lw}건`,
+                    advice: `${cat.label} 수요가 높아요! 프리미엄 ${cat.label} 메뉴를 추천하거나 업셀링 기회로 활용하세요.`,
+                    couponText: null,
+                  });
+                }
+              });
+
+              // 전체 매출 비교
+              const twTotal = twVisits.reduce((s, v) => s + (Number(v.amount) || 0), 0);
+              const lwTotal = lwVisits.reduce((s, v) => s + (Number(v.amount) || 0), 0);
+              if (lwTotal > 0 && twTotal < lwTotal * 0.7) {
+                const drop = Math.round((1 - twTotal / lwTotal) * 100);
+                // 가장 적게 줄어든(또는 유지된) 카테고리 찾기
+                let bestCat = SERVICE_CATS[0];
+                let bestRatio = 0;
+                SERVICE_CATS.forEach(cat => {
+                  const ratio = (lwRev[cat.label] || 1) > 0 ? (twRev[cat.label] || 0) / (lwRev[cat.label] || 1) : 0;
+                  if (ratio > bestRatio) { bestRatio = ratio; bestCat = cat; }
+                });
+                insights.push({
+                  type: 'alert',
+                  icon: 'monitoring',
+                  color: '#f59e0b',
+                  title: `주간 매출 ${drop}% 하락`,
+                  desc: `${Math.round(twTotal / 10000)}만 vs 지난주 ${Math.round(lwTotal / 10000)}만`,
+                  advice: `${bestCat.label}은 비교적 유지 중이에요. ${bestCat.label} 고객 대상 추가 예약을 유도하고, 약한 카테고리엔 프로모션을 걸어보세요.`,
+                  couponText: '타겟 프로모션 쿠폰 발행',
+                  couponIcon: 'campaign',
+                });
+              }
+
+              // 월간 비교
+              if (lmVisits.length > 0) {
+                const tmTotal = tmVisits.length;
+                const lmTotal = lmVisits.length;
+                if (tmTotal < lmTotal * 0.5 && today.getDate() > 14) {
+                  insights.push({
+                    type: 'warning',
+                    icon: 'event_busy',
+                    color: '#ef4444',
+                    title: `이번달 방문 고객 수 부족`,
+                    desc: `현재 ${tmTotal}명 (지난달 전체 ${lmTotal}명)`,
+                    advice: '이번달 후반전이에요. 미방문 고객 대상 일괄 쿠폰 발행으로 남은 기간 매출을 끌어올리세요.',
+                    couponText: '미방문 고객 일괄 쿠폰 발행',
+                    couponIcon: 'group_add',
+                  });
+                }
+              }
+
+              // 데모모드일때 인사이트 샘플
+              if (sheetsDB.isDemoMode && insights.length === 0) {
+                insights.push(
+                  {
+                    type: 'warning', icon: 'trending_down', color: '#ef4444',
+                    title: 'Color 고객 45% 감소',
+                    desc: '이번주 3건 vs 지난주 6건',
+                    advice: '비 오는 날씨가 계속되면서 염색 예약이 줄었어요. 우천 시 10% 할인 쿠폰을 발행하면 효과적이에요.',
+                    couponText: '염색 우천 할인 쿠폰 발행', couponIcon: 'palette',
+                  },
+                  {
+                    type: 'positive', icon: 'trending_up', color: '#10b981',
+                    title: 'Cut 고객 30% 증가!',
+                    desc: '이번주 8건 vs 지난주 6건',
+                    advice: '커트 수요가 높아요! 커트 + 트리트먼트 패키지로 객단가를 높여보세요.',
+                    couponText: null,
+                  },
+                  {
+                    type: 'alert', icon: 'lightbulb', color: '#f59e0b',
+                    title: '이번주 제안',
+                    desc: '데이터 기반 전략',
+                    advice: '트렌드 민감 고객 3명이 30일+ 미방문 중이에요. 신규 스타일 소개 문자와 체험 쿠폰으로 재방문을 유도하세요.',
+                    couponText: '트렌드 고객 체험 쿠폰', couponIcon: 'auto_awesome',
+                  }
+                );
+              }
+
+              if (insights.length === 0) return null;
+
+              return (
+                <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="material-symbols-outlined text-accent text-lg">lightbulb</span>
+                    <h2 className="text-sm font-bold">Weekly Insights</h2>
+                  </div>
+                  <div className="space-y-3">
+                    {insights.slice(0, 4).map((ins, i) => (
+                      <div key={i} className="rounded-xl border border-slate-100 overflow-hidden">
+                        <div className="px-3 py-2.5">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="material-symbols-outlined text-sm" style={{ color: ins.color }}>{ins.icon}</span>
+                            <span className="text-[12px] font-bold text-slate-800">{ins.title}</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mb-1.5">{ins.desc}</p>
+                          <p className="text-[11px] text-slate-600 leading-relaxed">{ins.advice}</p>
+                        </div>
+                        {ins.couponText && (
+                          <button
+                            onClick={() => navigate('/admin/coupons')}
+                            className="flex items-center gap-2 w-full px-3 py-2 bg-accent/5 border-t border-accent/10 hover:bg-accent/10 transition-colors text-left"
+                          >
+                            <span className="material-symbols-outlined text-accent text-sm">{ins.couponIcon}</span>
+                            <span className="text-[11px] font-semibold text-accent flex-1">{ins.couponText}</span>
+                            <span className="material-symbols-outlined text-accent/40 text-sm">arrow_forward</span>
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Client List */}
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold">{t('customers') || 'Clients'}</h2>
                 <span className="text-sm text-slate-500">{filteredCustomers.length}{t('people') || '명'}</span>
@@ -886,22 +1268,32 @@ export default function AdminDashboardPage() {
                 />
               </div>
               <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                {filteredCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    onClick={() => handleCustomerClick(customer.id)}
-                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-rose-accent flex items-center justify-center text-white font-bold text-xs shrink-0">
-                      {customer.name?.charAt(0)}
+                {filteredCustomers.map((customer) => {
+                  const totalSpent = getCustomerTotalSpent(customer.id, allVisits);
+                  const level = getCustomerLevel(totalSpent);
+                  const cats = getCustomerCats(customer.id, allVisits);
+                  return (
+                    <div
+                      key={customer.id}
+                      onClick={() => handleCustomerClick(customer.id)}
+                      className="flex items-center gap-2.5 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                    >
+                      <div className={`w-9 h-9 rounded-full ${level.bg} ring-1.5 ${level.ring} flex items-center justify-center shrink-0`}>
+                        <span className="text-[10px] font-black" style={{ color: level.color }}>{level.short}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1">
+                          <p className="text-sm font-bold truncate">{customer.name}</p>
+                          {cats.map((cat, ci) => (
+                            <div key={ci} className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-bold" style={{ color: level.color }}>{level.label} Class</span>
+                      </div>
+                      <span className="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate">{customer.name}</p>
-                      <p className="text-[11px] text-slate-500">{customer.phone}</p>
-                    </div>
-                    <span className="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
-                  </div>
-                ))}
+                  );
+                })}
                 {filteredCustomers.length === 0 && (
                   <div className="text-center py-8 text-slate-300">
                     <span className="material-symbols-outlined text-3xl mb-2">person_search</span>
@@ -936,6 +1328,19 @@ export default function AdminDashboardPage() {
                   <div className="flex-1">
                     <p className="text-sm font-bold text-slate-900">{t('salonCode') || 'Salon Code'}</p>
                     <p className="text-xs text-slate-500">{t('shareSalonCode') || 'Share code with customers'}</p>
+                  </div>
+                  <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+                </button>
+                <button
+                  onClick={() => { setShowSettings(false); navigate('/admin/coupons'); }}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-amber-500">confirmation_number</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-900">쿠폰 발행</p>
+                    <p className="text-xs text-slate-500">생일/할인 쿠폰 만들기</p>
                   </div>
                   <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
                 </button>

@@ -20,7 +20,9 @@ import {
   AdminDashboardPage,
   CustomerDetailPage,
   SalonCodeDisplayPage,
-  AIAnalysisPage
+  AIAnalysisPage,
+  CouponCreatePage,
+  BookingPage
 } from './pages';
 
 // Services
@@ -81,6 +83,8 @@ function AppContent() {
         <Route path="/admin/customer/:customerId" element={<CustomerDetailPage />} />
         <Route path="/admin/salon-code" element={<SalonCodeDisplayPage />} />
         <Route path="/admin/ai-analysis" element={<AIAnalysisPage />} />
+        <Route path="/admin/coupons" element={<CouponCreatePage />} />
+        <Route path="/booking" element={<BookingPage />} />
       </Routes>
 
       {/* Global Components */}

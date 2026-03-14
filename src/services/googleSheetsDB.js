@@ -70,6 +70,13 @@ const DEMO_COUPONS = [
   { id: 'cp5', customerId: 'c8', type: 'loyalty', amount: 10, isPercent: true, expiryDate: '2026-05-31', isUsed: false, usedAt: null, createdAt: '2026-03-14' },
 ];
 
+const DEMO_BOOKINGS = [
+  { id: 'bk1', customerId: 'c1', customerName: '김서연', phone: '010-1234-5678', service: '발레아쥬 염색', date: '2026-03-18', time: '14:00', status: 'confirmed', memo: '', createdAt: '2026-03-15' },
+  { id: 'bk2', customerId: 'c4', customerName: '정민지', phone: '010-4567-8901', service: '뿌리 염색', date: '2026-03-19', time: '11:00', status: 'confirmed', memo: '밝은 톤으로', createdAt: '2026-03-14' },
+  { id: 'bk3', customerId: 'c8', customerName: '송예린', phone: '010-8901-2345', service: '두피 클리닉', date: '2026-03-20', time: '15:30', status: 'pending', memo: '', createdAt: '2026-03-15' },
+  { id: 'bk4', customerId: 'c2', customerName: '이지은', phone: '010-2345-6789', service: 'S컬 펌', date: '2026-03-21', time: '10:00', status: 'pending', memo: '자연스럽게', createdAt: '2026-03-15' },
+];
+
 class GoogleSheetsDB {
   constructor() {
     this.spreadsheetId = null;
@@ -185,7 +192,8 @@ class GoogleSheetsDB {
           { properties: { title: CONFIG.SHEETS.CUSTOMERS } },
           { properties: { title: CONFIG.SHEETS.VISITS } },
           { properties: { title: CONFIG.SHEETS.COUPONS } },
-          { properties: { title: CONFIG.SHEETS.SETTINGS } }
+          { properties: { title: CONFIG.SHEETS.SETTINGS } },
+          { properties: { title: CONFIG.SHEETS.BOOKINGS } }
         ]
       })
     });
@@ -241,6 +249,10 @@ class GoogleSheetsDB {
       {
         range: `${CONFIG.SHEETS.COUPONS}!A1:I1`,
         values: [['id', 'customerId', 'type', 'amount', 'isPercent', 'expiryDate', 'isUsed', 'usedAt', 'createdAt']]
+      },
+      {
+        range: `${CONFIG.SHEETS.BOOKINGS}!A1:J1`,
+        values: [['id', 'customerId', 'customerName', 'phone', 'service', 'date', 'time', 'status', 'memo', 'createdAt']]
       },
       {
         range: `${CONFIG.SHEETS.SETTINGS}!A1:B5`,
@@ -518,6 +530,111 @@ class GoogleSheetsDB {
       !c.isUsed &&
       c.expiryDate >= today
     );
+  }
+
+  async createCoupon({ customerId, type, amount, isPercent, expiryDate }) {
+    const coupon = {
+      id: `cp_${Date.now()}`,
+      customerId,
+      type: type || 'discount',
+      amount: Number(amount) || 0,
+      isPercent: !!isPercent,
+      expiryDate: expiryDate || '',
+      isUsed: false,
+      usedAt: null,
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+
+    if (this.isDemoMode) {
+      DEMO_COUPONS.push(coupon);
+      return coupon;
+    }
+
+    this._ensureConnected();
+    await window.gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: this.spreadsheetId,
+      range: `${CONFIG.SHEETS.COUPONS}!A:I`,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[coupon.id, coupon.customerId, coupon.type, coupon.amount, coupon.isPercent ? 'TRUE' : 'FALSE', coupon.expiryDate, 'FALSE', '', coupon.createdAt]]
+      }
+    });
+
+    this._clearCache('coupons');
+    return coupon;
+  }
+
+  async createCouponsForMultiple(customerIds, { type, amount, isPercent, expiryDate }) {
+    const results = [];
+    for (const cid of customerIds) {
+      const coupon = await this.createCoupon({ customerId: cid, type, amount, isPercent, expiryDate });
+      results.push(coupon);
+    }
+    return results;
+  }
+
+  // ========== 예약 ==========
+
+  async getAllBookings() {
+    if (this.isDemoMode) return [...DEMO_BOOKINGS];
+    this._ensureConnected();
+    const response = await window.gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId: this.spreadsheetId,
+      range: `${CONFIG.SHEETS.BOOKINGS}!A2:J`
+    });
+    const rows = response.result.values || [];
+    return rows.map(row => ({
+      id: row[0], customerId: row[1], customerName: row[2], phone: row[3],
+      service: row[4], date: row[5], time: row[6], status: row[7] || 'pending',
+      memo: row[8] || '', createdAt: row[9] || ''
+    }));
+  }
+
+  async getBookingsByCustomerId(customerId) {
+    const bookings = await this.getAllBookings();
+    return bookings.filter(b => b.customerId === customerId).sort((a, b) => (b.date + b.time).localeCompare(a.date + a.time));
+  }
+
+  async createBooking({ customerId, customerName, phone, service, date, time, memo }) {
+    const booking = {
+      id: `bk_${Date.now()}`, customerId: customerId || '', customerName: customerName || '',
+      phone: phone || '', service: service || '', date: date || '',
+      time: time || '', status: 'pending', memo: memo || '',
+      createdAt: new Date().toISOString().split('T')[0]
+    };
+    if (this.isDemoMode) {
+      DEMO_BOOKINGS.push(booking);
+      return booking;
+    }
+    this._ensureConnected();
+    await window.gapi.client.sheets.spreadsheets.values.append({
+      spreadsheetId: this.spreadsheetId,
+      range: `${CONFIG.SHEETS.BOOKINGS}!A:J`,
+      valueInputOption: 'RAW',
+      resource: {
+        values: [[booking.id, booking.customerId, booking.customerName, booking.phone, booking.service, booking.date, booking.time, booking.status, booking.memo, booking.createdAt]]
+      }
+    });
+    return booking;
+  }
+
+  async updateBookingStatus(bookingId, status) {
+    if (this.isDemoMode) {
+      const bk = DEMO_BOOKINGS.find(b => b.id === bookingId);
+      if (bk) bk.status = status;
+      return bk;
+    }
+    // Real mode: find row index and update
+    const bookings = await this.getAllBookings();
+    const idx = bookings.findIndex(b => b.id === bookingId);
+    if (idx === -1) return null;
+    await window.gapi.client.sheets.spreadsheets.values.update({
+      spreadsheetId: this.spreadsheetId,
+      range: `${CONFIG.SHEETS.BOOKINGS}!H${idx + 2}`,
+      valueInputOption: 'RAW',
+      resource: { values: [[status]] }
+    });
+    return { ...bookings[idx], status };
   }
 
   // ========== 설정 ==========

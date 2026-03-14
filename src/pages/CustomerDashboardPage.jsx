@@ -616,6 +616,17 @@ export default function CustomerDashboardPage() {
                 </div>
               </div>
 
+              {/* Booking Button */}
+              <div className="px-6 lg:px-8 pt-4">
+                <button
+                  onClick={() => navigate('/booking')}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary/10 border border-primary/20 rounded-xl font-semibold text-primary hover:bg-primary/15 active:scale-[0.98] transition-all"
+                >
+                  <span className="material-symbols-outlined text-lg">calendar_month</span>
+                  <span className="text-sm">예약하기</span>
+                </button>
+              </div>
+
               {/* ── Style Timeline Chart ── */}
               <section className="px-6 lg:px-8 pt-6 pb-2">
                 <div className="flex items-center justify-between mb-4">

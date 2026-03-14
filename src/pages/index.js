@@ -8,3 +8,5 @@ export { default as AdminDashboardPage } from './AdminDashboardPage';
 export { default as CustomerDetailPage } from './CustomerDetailPage';
 export { default as SalonCodeDisplayPage } from './SalonCodeDisplayPage';
 export { default as AIAnalysisPage } from './AIAnalysisPage';
+export { default as CouponCreatePage } from './CouponCreatePage';
+export { default as BookingPage } from './BookingPage';

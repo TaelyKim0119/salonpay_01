@@ -19,7 +19,8 @@ export const CONFIG = {
     CUSTOMERS: 'Customers',
     VISITS: 'Visits',
     COUPONS: 'Coupons',
-    SETTINGS: 'Settings'
+    SETTINGS: 'Settings',
+    BOOKINGS: 'Bookings'
   },
 
   // 캐시 설정 (밀리초)
