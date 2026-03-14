@@ -1,0 +1,103 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/forms";
+@plugin "@tailwindcss/container-queries";
+
+@theme {
+  /* Pink Theme (Customer-facing) */
+  --color-primary: #f490b1;
+  --color-primary-light: #f9c2d5;
+  --color-primary-dark: #e06090;
+
+  /* Orange Theme (Admin/Owner) */
+  --color-accent: #ec5b13;
+  --color-accent-light: #ff7a3d;
+  --color-accent-dark: #c94a0e;
+
+  /* Rose */
+  --color-rose-accent: #e11d48;
+  --color-rose-soft: #fdf2f8;
+
+  /* Backgrounds */
+  --color-bg-light: #f8f6f6;
+  --color-bg-dark-pink: #211116;
+  --color-bg-dark-orange: #221610;
+
+  /* Fonts */
+  --font-display: "Manrope", "Pretendard Variable", sans-serif;
+  --font-sans: "Public Sans", "Pretendard Variable", sans-serif;
+}
+
+/* Glass Card Effect */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Loyalty Gradient */
+.loyalty-gradient {
+  background: linear-gradient(135deg, #f490b1 0%, #f9c2d5 100%);
+}
+
+/* Chart Gradient */
+.chart-gradient {
+  fill: url(#chartGradient);
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Soft Pink Gradient */
+.soft-pink-gradient {
+  background: linear-gradient(135deg, rgba(255, 139, 203, 0.1) 0%, rgba(236, 91, 19, 0.05) 100%);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Toast Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 10px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Bottom Sheet Slide Up */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Safe area bottom */
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/* Body base */
+body {
+  font-family: "Pretendard Variable", "Manrope", "Public Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

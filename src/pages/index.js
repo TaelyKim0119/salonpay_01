@@ -1,0 +1,10 @@
+export { default as MainPage } from './MainPage';
+export { default as SalonCodePage } from './SalonCodePage';
+export { default as CustomerLoginPage } from './CustomerLoginPage';
+export { default as CustomerDashboardPage } from './CustomerDashboardPage';
+export { default as AdminLoginPage } from './AdminLoginPage';
+export { default as AdminRegisterPage } from './AdminRegisterPage';
+export { default as AdminDashboardPage } from './AdminDashboardPage';
+export { default as CustomerDetailPage } from './CustomerDetailPage';
+export { default as SalonCodeDisplayPage } from './SalonCodeDisplayPage';
+export { default as AIAnalysisPage } from './AIAnalysisPage';
