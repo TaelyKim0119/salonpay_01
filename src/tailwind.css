@@ -3,23 +3,23 @@
 @plugin "@tailwindcss/container-queries";
 
 @theme {
-  /* Pink Theme (Customer-facing) */
-  --color-primary: #f490b1;
-  --color-primary-light: #f9c2d5;
-  --color-primary-dark: #e06090;
+  /* Purple Theme (Customer-facing) */
+  --color-primary: #8b5cf6;
+  --color-primary-light: #a78bfa;
+  --color-primary-dark: #7c3aed;
 
   /* Orange Theme (Admin/Owner) */
   --color-accent: #ec5b13;
   --color-accent-light: #ff7a3d;
   --color-accent-dark: #c94a0e;
 
-  /* Rose */
-  --color-rose-accent: #e11d48;
-  --color-rose-soft: #fdf2f8;
+  /* Rose → Purple accent */
+  --color-rose-accent: #6d28d9;
+  --color-rose-soft: #f5f3ff;
 
   /* Backgrounds */
-  --color-bg-light: #f8f6f6;
-  --color-bg-dark-pink: #211116;
+  --color-bg-light: #f7f6f9;
+  --color-bg-dark-pink: #1a1025;
   --color-bg-dark-orange: #221610;
 
   /* Fonts */
@@ -36,7 +36,7 @@
 
 /* Loyalty Gradient */
 .loyalty-gradient {
-  background: linear-gradient(135deg, #f490b1 0%, #f9c2d5 100%);
+  background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
 }
 
 /* Chart Gradient */
@@ -49,9 +49,9 @@
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
-/* Soft Pink Gradient */
+/* Soft Purple Gradient */
 .soft-pink-gradient {
-  background: linear-gradient(135deg, rgba(255, 139, 203, 0.1) 0%, rgba(236, 91, 19, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(236, 91, 19, 0.05) 100%);
 }
 
 /* Hide scrollbar */

@@ -41,10 +41,10 @@ export default function CustomerDashboardPage() {
 
   return (
     <div className="bg-bg-light font-display text-slate-900 min-h-screen">
-      <div className="relative flex h-auto min-h-screen w-full max-w-md mx-auto flex-col bg-white overflow-x-hidden shadow-2xl">
+      <div className="relative flex h-auto min-h-screen w-full max-w-md lg:max-w-5xl mx-auto flex-col bg-white overflow-x-hidden shadow-2xl">
 
         {/* Header */}
-        <header className="flex items-center p-6 justify-between">
+        <header className="flex items-center p-6 lg:px-8 justify-between">
           <div className="flex items-center gap-3">
             <div className="size-12 shrink-0 rounded-full border-2 border-primary/20 p-0.5">
               <div className="bg-primary rounded-full size-full flex items-center justify-center text-white font-bold text-lg">
@@ -64,7 +64,7 @@ export default function CustomerDashboardPage() {
         </header>
 
         {/* Loyalty Card */}
-        <div className="px-6 py-2">
+        <div className="px-6 lg:px-8 py-2">
           <div className="loyalty-gradient rounded-xl p-6 shadow-lg shadow-primary/20 relative overflow-hidden group">
             {/* Decorative Pattern */}
             <div className="absolute top-[-20%] right-[-10%] opacity-20 pointer-events-none text-white">
@@ -101,9 +101,12 @@ export default function CustomerDashboardPage() {
           </div>
         </div>
 
+        {/* Desktop: two-column grid for coupons + recent session */}
+        <div className="lg:grid lg:grid-cols-2 lg:gap-6 lg:px-8">
+
         {/* Coupons Highlight */}
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl">
+        <div className="px-6 lg:px-0 py-4">
+          <div className="flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl h-full">
             <div className="flex items-center gap-3">
               <div className="bg-primary size-10 rounded-lg flex items-center justify-center text-white">
                 <span className="material-symbols-outlined">confirmation_number</span>
@@ -123,22 +126,22 @@ export default function CustomerDashboardPage() {
 
         {/* Upcoming Appointment (latest visit) */}
         {latestVisit && (
-          <section className="px-6 py-4">
-            <h3 className="text-slate-900 text-lg font-bold mb-4">
-              {t('recentSession') || 'Recent Session'}
-            </h3>
-            <div className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm">
-              <div className="h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                <span className="material-symbols-outlined text-primary text-[48px] opacity-40">spa</span>
-              </div>
-              <div className="p-4 flex justify-between items-center">
-                <div>
-                  <p className="text-slate-900 font-bold">{latestVisit.service}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="material-symbols-outlined text-primary text-sm">calendar_today</span>
-                    <p className="text-slate-500 text-xs">
-                      {formatDate(latestVisit.date, formatDateI18n)}
-                    </p>
+          <div className="px-6 lg:px-0 py-4">
+            <div className="bg-white rounded-xl overflow-hidden border border-slate-100 shadow-sm h-full">
+              <div className="p-4 flex justify-between items-center h-full">
+                <div className="flex items-center gap-3">
+                  <div className="size-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-primary">spa</span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-0.5">{t('recentSession') || 'Recent Session'}</p>
+                    <p className="text-slate-900 font-bold">{latestVisit.service}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="material-symbols-outlined text-primary text-sm">calendar_today</span>
+                      <p className="text-slate-500 text-xs">
+                        {formatDate(latestVisit.date, formatDateI18n)}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -147,18 +150,20 @@ export default function CustomerDashboardPage() {
                 </div>
               </div>
             </div>
-          </section>
+          </div>
         )}
+
+        </div>{/* end desktop grid */}
 
         {/* Visit List */}
         {visits.length > 1 && (
-          <section className="px-6 py-4 mb-24">
+          <section className="px-6 lg:px-8 py-4 mb-24 lg:mb-8">
             <h3 className="text-slate-900 text-lg font-bold mb-4">
               {t('visitHistory') || 'Visit History'}
             </h3>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-4">
               {visits.slice(1).map((visit) => (
-                <div key={visit.id} className="flex gap-4 items-center">
+                <div key={visit.id} className="flex gap-4 items-center lg:bg-slate-50 lg:p-4 lg:rounded-xl">
                   <div className="size-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-primary">local_activity</span>
                   </div>
@@ -178,7 +183,7 @@ export default function CustomerDashboardPage() {
         )}
 
         {visits.length === 0 && (
-          <section className="px-6 py-4 mb-24">
+          <section className="px-6 lg:px-8 py-4 mb-24 lg:mb-8">
             <div className="flex flex-col items-center justify-center py-12 text-slate-300">
               <span className="material-symbols-outlined text-[48px] mb-2">calendar_today</span>
               <p className="text-sm text-slate-400">{t('noHistory') || 'No visit history'}</p>
@@ -187,7 +192,7 @@ export default function CustomerDashboardPage() {
         )}
 
         {/* Bottom Navigation Bar */}
-        <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-slate-100 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 flex justify-between items-center z-50">
+        <nav className="lg:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-slate-100 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 flex justify-between items-center z-50">
           {[
             { key: 'home', icon: 'home', label: t('home') || 'Home', active: true },
             { key: 'history', icon: 'history', label: t('history') || 'History' },

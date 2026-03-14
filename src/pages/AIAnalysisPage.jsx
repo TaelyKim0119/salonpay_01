@@ -156,7 +156,7 @@ export default function AIAnalysisPage() {
 
     return (
       <div className="bg-bg-light font-display text-slate-900 antialiased min-h-screen">
-        <div className="relative flex h-auto min-h-screen w-full max-w-md lg:max-w-4xl mx-auto flex-col bg-white overflow-x-hidden shadow-2xl">
+        <div className="relative flex h-auto min-h-screen w-full max-w-md lg:max-w-6xl mx-auto flex-col bg-white overflow-x-hidden shadow-2xl">
 
           {/* Header */}
           <header className="flex items-center p-4 pb-2 justify-between sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-primary/10">
@@ -172,8 +172,11 @@ export default function AIAnalysisPage() {
           </header>
 
           <main className="flex-1 overflow-y-auto pb-24">
+            {/* Desktop: two-column layout for revenue + segments */}
+            <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-8">
+
             {/* Revenue Section */}
-            <section className="px-4 py-6">
+            <section className="px-4 lg:px-0 py-6">
               <div className="flex flex-col gap-2 mb-4">
                 <p className="text-slate-500 text-sm font-medium uppercase tracking-wider">Monthly Revenue & Client Growth</p>
                 <div className="flex items-end gap-3">
@@ -191,12 +194,12 @@ export default function AIAnalysisPage() {
                 <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 150">
                   <defs>
                     <linearGradient id="paint0_linear_salon" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#f490b1" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#f490b1" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                   <path fill="url(#paint0_linear_salon)" d="M0,120 C50,110 80,40 120,50 C160,60 180,90 220,80 C260,70 300,20 350,30 C380,36 400,10 400,10 L400,150 L0,150 Z" />
-                  <path d="M0,120 C50,110 80,40 120,50 C160,60 180,90 220,80 C260,70 300,20 350,30 C380,36 400,10 400,10" fill="none" stroke="#f490b1" strokeLinecap="round" strokeWidth="3" />
+                  <path d="M0,120 C50,110 80,40 120,50 C160,60 180,90 220,80 C260,70 300,20 350,30 C380,36 400,10 400,10" fill="none" stroke="#8b5cf6" strokeLinecap="round" strokeWidth="3" />
                 </svg>
                 <div className="flex justify-between mt-2 px-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                   <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
@@ -205,7 +208,7 @@ export default function AIAnalysisPage() {
             </section>
 
             {/* AI Insight Box */}
-            <section className="px-4 mb-8">
+            <section className="px-4 lg:px-0 mb-8">
               <div className="p-5 bg-white border-2 border-primary/30 rounded-xl shadow-[0_0_15px_rgba(244,144,177,0.2)]">
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-lg bg-primary/10">
@@ -221,8 +224,10 @@ export default function AIAnalysisPage() {
               </div>
             </section>
 
+            </div>{/* end desktop two-column */}
+
             {/* Customer Segments */}
-            <section className="px-4 mb-8">
+            <section className="px-4 lg:px-8 mb-8">
               <h3 className="text-lg font-bold mb-4">Customer Segments</h3>
               <div className="flex items-center justify-between gap-6 p-4 bg-primary/5 rounded-2xl">
                 <div className="relative w-32 h-32 shrink-0">
@@ -264,9 +269,9 @@ export default function AIAnalysisPage() {
             </section>
 
             {/* Analysis Type Buttons */}
-            <section className="px-4 mb-12">
+            <section className="px-4 lg:px-8 mb-12">
               <h3 className="text-lg font-bold mb-4">AI Analysis</h3>
-              <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-3 lg:space-y-0">
+              <div className="space-y-3 lg:grid lg:grid-cols-3 lg:gap-4 lg:space-y-0">
                 {analysisTypes.map((type) => (
                   <button
                     key={type.id}
@@ -288,7 +293,7 @@ export default function AIAnalysisPage() {
           </main>
 
           {/* Bottom Nav */}
-          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto flex border-t border-primary/10 bg-white/95 backdrop-blur-md px-4 pb-6 pt-3">
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 max-w-md mx-auto flex border-t border-primary/10 bg-white/95 backdrop-blur-md px-4 pb-6 pt-3">
             <button onClick={() => navigate('/admin')} className="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400">
               <span className="material-symbols-outlined">dashboard</span>
               <p className="text-[10px] font-bold uppercase tracking-wider">Dashboard</p>
@@ -314,14 +319,15 @@ export default function AIAnalysisPage() {
   // ─── Customer Selection (individual) ───
   if (selectedType.needsCustomer && !selectedCustomer && !analysisResult) {
     return (
-      <div className="bg-bg-light font-display max-w-md mx-auto min-h-screen bg-white shadow-2xl">
-        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-primary/10 px-4 h-14 flex items-center">
+      <div className="bg-bg-light font-display min-h-screen lg:flex lg:items-start lg:justify-center">
+        <div className="max-w-md lg:max-w-2xl mx-auto min-h-screen lg:min-h-0 bg-white shadow-2xl lg:rounded-2xl lg:my-8">
+        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-primary/10 px-4 h-14 flex items-center lg:rounded-t-2xl">
           <button onClick={() => setSelectedType(null)} className="w-10 h-10 flex items-center justify-center">
             <span className="material-symbols-outlined text-slate-700">arrow_back</span>
           </button>
           <h1 className="text-[17px] font-bold flex-1 text-center pr-10">분석할 고객 선택</h1>
         </div>
-        <div className="px-4 pt-4">
+        <div className="px-4 lg:px-6 pt-4">
           <div className="relative mb-4">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 text-[20px]">search</span>
             <input
@@ -353,6 +359,7 @@ export default function AIAnalysisPage() {
             ))}
           </div>
         </div>
+        </div>
       </div>
     );
   }
@@ -360,7 +367,8 @@ export default function AIAnalysisPage() {
   // ─── Analysis Ready / Running ───
   if (!analysisResult) {
     return (
-      <div className="bg-bg-light font-display max-w-md mx-auto min-h-screen bg-white shadow-2xl">
+      <div className="bg-bg-light font-display min-h-screen lg:flex lg:items-center lg:justify-center">
+        <div className="max-w-md mx-auto min-h-screen lg:min-h-0 bg-white shadow-2xl lg:rounded-2xl lg:my-8">
         <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-primary/10 px-4 h-14 flex items-center">
           <button
             onClick={() => selectedCustomer ? setSelectedCustomer(null) : setSelectedType(null)}
@@ -402,13 +410,15 @@ export default function AIAnalysisPage() {
             )}
           </button>
         </div>
+        </div>
       </div>
     );
   }
 
   // ─── Analysis Result ───
   return (
-    <div className="bg-bg-light font-display max-w-md mx-auto min-h-screen bg-white shadow-2xl">
+    <div className="bg-bg-light font-display min-h-screen lg:flex lg:items-start lg:justify-center">
+      <div className="max-w-md lg:max-w-3xl mx-auto min-h-screen lg:min-h-0 bg-white shadow-2xl lg:rounded-2xl lg:my-8">
       <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-primary/10 px-4 h-14 flex items-center">
         <button
           onClick={() => { setAnalysisResult(null); setSelectedCustomer(null); setSelectedType(null); }}
@@ -419,7 +429,7 @@ export default function AIAnalysisPage() {
         <h1 className="text-[17px] font-bold flex-1 text-center pr-10">분석 결과</h1>
       </div>
 
-      <div className="px-4 pt-6 pb-24">
+      <div className="px-4 lg:px-8 pt-6 pb-24 lg:pb-8">
         {/* Result Header */}
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -468,6 +478,7 @@ export default function AIAnalysisPage() {
             다시 분석
           </button>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -132,7 +132,10 @@ export default function AdminDashboardPage() {
         </header>
 
         {/* ═══ Main Content ═══ */}
-        <main className="flex-1 p-4 lg:p-8 pb-24 lg:pb-8 space-y-6 lg:space-y-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 lg:p-8 pb-24 lg:pb-8 max-w-7xl mx-auto w-full">
+          <div className="lg:flex lg:gap-8">
+          {/* Desktop: main content left, clients right */}
+          <div className="flex-1 space-y-6 lg:space-y-8">
 
           {/* ── Clients Tab (mobile) ── */}
           {activeTab === 'clients' && (
@@ -244,8 +247,8 @@ export default function AdminDashboardPage() {
                 <svg className="w-full h-full" preserveAspectRatio="none" viewBox="0 0 500 200">
                   <defs>
                     <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
-                      <stop offset="0%" stopColor="#f472b6" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#f472b6" stopOpacity="0" />
+                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
+                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                     </linearGradient>
                   </defs>
                   <line stroke="#f1f5f9" strokeWidth="1" x1="0" x2="500" y1="40" y2="40" />
@@ -253,10 +256,10 @@ export default function AdminDashboardPage() {
                   <line stroke="#f1f5f9" strokeWidth="1" x1="0" x2="500" y1="120" y2="120" />
                   <line stroke="#f1f5f9" strokeWidth="1" x1="0" x2="500" y1="160" y2="160" />
                   <path fill="url(#chartFill)" d="M0,160 L70,140 L140,150 L210,80 L280,110 L350,40 L420,90 L500,60 L500,200 L0,200 Z" />
-                  <path d="M0,160 L70,140 L140,150 L210,80 L280,110 L350,40 L420,90 L500,60" fill="none" stroke="#f472b6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
+                  <path d="M0,160 L70,140 L140,150 L210,80 L280,110 L350,40 L420,90 L500,60" fill="none" stroke="#8b5cf6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
                   {[70,140,210,280,350,420,500].map((cx, i) => {
                     const cy = [140,150,80,110,40,90,60][i];
-                    return <circle key={i} cx={cx} cy={cy} fill="white" r="4" stroke="#f472b6" strokeWidth="2" />;
+                    return <circle key={i} cx={cx} cy={cy} fill="white" r="4" stroke="#8b5cf6" strokeWidth="2" />;
                   })}
                 </svg>
               </div>
@@ -372,6 +375,54 @@ export default function AdminDashboardPage() {
             </div>
           </section>
           </div>
+
+          </div>{/* end flex-1 main content */}
+
+          {/* Desktop: Client sidebar */}
+          <aside className="hidden lg:block w-80 shrink-0 space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 sticky top-24">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">{t('customers') || 'Clients'}</h2>
+                <span className="text-sm text-slate-500">{filteredCustomers.length}{t('people') || '명'}</span>
+              </div>
+              <div className="relative mb-4">
+                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('searchCustomer') || 'Search...'}
+                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent/30 focus:border-accent"
+                />
+              </div>
+              <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+                {filteredCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    onClick={() => handleCustomerClick(customer.id)}
+                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-accent to-rose-accent flex items-center justify-center text-white font-bold text-xs shrink-0">
+                      {customer.name?.charAt(0)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold truncate">{customer.name}</p>
+                      <p className="text-[11px] text-slate-500">{customer.phone}</p>
+                    </div>
+                    <span className="material-symbols-outlined text-slate-300 text-sm">chevron_right</span>
+                  </div>
+                ))}
+                {filteredCustomers.length === 0 && (
+                  <div className="text-center py-8 text-slate-300">
+                    <span className="material-symbols-outlined text-3xl mb-2">person_search</span>
+                    <p className="text-sm text-slate-400">{searchQuery ? (t('noSearchResults') || 'No results') : (t('noCustomers') || 'No customers yet')}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
+
+          </div>{/* end lg:flex */}
         </main>
 
         {/* Settings Bottom Sheet */}

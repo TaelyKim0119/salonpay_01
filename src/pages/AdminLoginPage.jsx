@@ -47,8 +47,8 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-light font-sans">
-      <div className="max-w-md mx-auto min-h-screen bg-white shadow-2xl flex flex-col">
+    <div className="min-h-screen bg-bg-light font-sans lg:flex lg:items-center lg:justify-center">
+      <div className="max-w-md mx-auto min-h-screen lg:min-h-0 bg-white shadow-2xl lg:rounded-2xl lg:my-8 flex flex-col">
         {/* Header */}
         <div className="flex items-center px-4 h-14">
           <button

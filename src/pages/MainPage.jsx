@@ -27,13 +27,13 @@ export default function MainPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-light font-sans relative">
+    <div className="min-h-screen bg-bg-light font-sans relative lg:flex lg:flex-col lg:items-center lg:justify-center">
       {/* Language Switcher */}
       <div className="absolute top-4 right-4 z-10">
         <LanguageSwitcher />
       </div>
 
-      <div className="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+      <div className="relative flex h-auto min-h-screen lg:min-h-0 w-full lg:max-w-5xl flex-col overflow-x-hidden">
         {/* Header Section */}
         <div className="flex items-center p-4 pb-2 justify-between">
           <div className="text-slate-900 flex size-12 shrink-0 items-center justify-center cursor-pointer">
@@ -44,29 +44,35 @@ export default function MainPage() {
           </h2>
         </div>
 
-        <div className="flex flex-col items-center px-6 pt-12 pb-8">
-          <h1 className="text-slate-900 tracking-tight text-[32px] font-bold leading-tight text-center">
-            {t('appTitle') || 'Welcome to'} <span className="text-accent">SalonPay</span>
+        <div className="flex flex-col items-center px-6 pt-12 lg:pt-16 pb-8">
+          <h1 className="tracking-tight text-[40px] lg:text-[52px] font-extrabold leading-none text-center">
+            <span className="bg-gradient-to-r from-primary via-primary-dark to-rose-accent bg-clip-text text-transparent">Salon</span><span className="text-slate-900">Pay</span>
           </h1>
-          <p className="text-slate-600 text-base font-normal leading-relaxed mt-3 text-center max-w-xs">
+          <div className="w-12 h-1 bg-gradient-to-r from-accent to-primary rounded-full mt-4 mb-4" />
+          <p className="text-slate-500 text-base lg:text-lg font-normal leading-relaxed text-center max-w-xs lg:max-w-lg">
             {t('appSubtitle') || 'Select your experience to begin your journey in premium beauty services.'}
           </p>
         </div>
 
         {/* Role Selection Cards */}
-        <div className="px-6 space-y-6 max-w-xl mx-auto w-full">
+        <div className="px-6 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8 max-w-xl lg:max-w-4xl mx-auto w-full">
           {/* Customer Role */}
           <div
             onClick={handleCustomerClick}
-            className="group relative flex flex-col items-stretch justify-start rounded-xl shadow-sm border border-slate-200/50 bg-white overflow-hidden hover:border-accent/50 transition-all duration-300 cursor-pointer"
+            className="group relative flex flex-col items-stretch justify-start rounded-2xl shadow-sm border border-slate-200/50 bg-white overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
           >
-            <div className="relative w-full h-48 flex items-center justify-center overflow-hidden bg-gradient-to-br from-rose-100 via-pink-50 to-orange-50">
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-4 right-8"><span className="material-symbols-outlined text-primary text-6xl">spa</span></div>
-                <div className="absolute bottom-6 left-6"><span className="material-symbols-outlined text-primary text-4xl">favorite</span></div>
-              </div>
-              <div className="relative z-10 bg-white/80 backdrop-blur-md p-5 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined text-accent !text-4xl">person_search</span>
+            <div className="relative w-full h-56 lg:h-64 overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=800&q=80&auto=format&fit=crop"
+                alt="Beautiful Hairstyle"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
+              <div className="absolute bottom-4 left-5 flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-lg">spa</span>
+                </div>
+                <span className="text-white/90 text-xs font-bold uppercase tracking-widest">Beauty & Care</span>
               </div>
             </div>
             <div className="flex w-full grow flex-col items-stretch justify-center gap-2 p-6">
@@ -93,15 +99,20 @@ export default function MainPage() {
           {/* Salon Owner Role */}
           <div
             onClick={handleAdminClick}
-            className="group relative flex flex-col items-stretch justify-start rounded-xl shadow-sm border border-slate-200/50 bg-white overflow-hidden hover:border-accent/50 transition-all duration-300 cursor-pointer"
+            className="group relative flex flex-col items-stretch justify-start rounded-2xl shadow-sm border border-slate-200/50 bg-white overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer"
           >
-            <div className="relative w-full h-48 flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-100 via-slate-50 to-orange-50">
-              <div className="absolute inset-0 opacity-10">
-                <div className="absolute top-4 left-8"><span className="material-symbols-outlined text-accent text-6xl">analytics</span></div>
-                <div className="absolute bottom-6 right-6"><span className="material-symbols-outlined text-accent text-4xl">storefront</span></div>
-              </div>
-              <div className="relative z-10 bg-white/80 backdrop-blur-md p-5 rounded-full shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <span className="material-symbols-outlined text-accent !text-4xl">dashboard_customize</span>
+            <div className="relative w-full h-56 lg:h-64 overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1600948836101-f9ffda59d250?w=800&q=80&auto=format&fit=crop"
+                alt="Modern Salon Interior"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent" />
+              <div className="absolute bottom-4 left-5 flex items-center gap-2">
+                <div className="w-9 h-9 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-white text-lg">insights</span>
+                </div>
+                <span className="text-white/90 text-xs font-bold uppercase tracking-widest">Manage & Grow</span>
               </div>
             </div>
             <div className="flex w-full grow flex-col items-stretch justify-center gap-2 p-6">

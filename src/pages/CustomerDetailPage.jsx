@@ -61,7 +61,7 @@ export default function CustomerDetailPage() {
     <div className="bg-bg-light text-slate-900 min-h-screen">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-bg-light/80 backdrop-blur-md border-b border-slate-200">
-        <div className="flex items-center p-4 justify-between max-w-md mx-auto">
+        <div className="flex items-center p-4 justify-between max-w-md lg:max-w-4xl mx-auto">
           <button
             onClick={() => navigate('/admin')}
             className="flex items-center justify-center p-2 rounded-full hover:bg-slate-200 transition-colors"
@@ -75,11 +75,11 @@ export default function CustomerDetailPage() {
         </div>
       </div>
 
-      <main className="max-w-md mx-auto pb-24">
+      <main className="max-w-md lg:max-w-4xl mx-auto pb-24 lg:pb-8">
         {/* User Profile Header */}
-        <div className="flex p-6">
+        <div className="flex p-6 lg:p-8">
           <div className="flex w-full flex-col gap-4 items-center">
-            <div className="flex gap-4 flex-col items-center">
+            <div className="flex gap-4 flex-col lg:flex-row items-center">
               <div className="relative">
                 <div className="bg-gradient-to-br from-accent to-rose-accent rounded-full min-h-24 w-24 border-4 border-white shadow-lg flex items-center justify-center text-white text-3xl font-bold">
                   {firstLetter}
@@ -99,7 +99,7 @@ export default function CustomerDetailPage() {
         </div>
 
         {/* Stats Row */}
-        <div className="flex gap-3 px-4 mb-8">
+        <div className="flex gap-3 px-4 lg:px-0 mb-8">
           <div className="flex-1 bg-white p-3 rounded-xl shadow-sm border border-slate-100 text-center">
             <p className="text-rose-accent text-xl font-bold">{customer.visitCount || 0}</p>
             <p className="text-slate-500 text-[10px] uppercase tracking-wider font-bold">{t('visits') || 'Visits'}</p>
@@ -114,10 +114,10 @@ export default function CustomerDetailPage() {
           </div>
         </div>
 
-        <h2 className="text-slate-900 text-xl font-bold px-6 pb-4">{t('styleEvolution') || 'Style Evolution'}</h2>
+        <h2 className="text-slate-900 text-xl font-bold px-6 lg:px-0 pb-4">{t('styleEvolution') || 'Style Evolution'}</h2>
 
         {/* Timeline */}
-        <div className="relative px-6">
+        <div className="relative px-6 lg:px-0">
           {/* Central Line */}
           <div className="absolute left-[39px] top-0 bottom-0 w-[2px] bg-slate-200" />
 
@@ -166,7 +166,7 @@ export default function CustomerDetailPage() {
       </main>
 
       {/* Navigation Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-200">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-slate-200">
         <div className="flex max-w-md mx-auto h-20 items-stretch">
           <button
             onClick={() => navigate('/admin')}
