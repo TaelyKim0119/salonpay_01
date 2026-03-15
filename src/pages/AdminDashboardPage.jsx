@@ -1190,48 +1190,72 @@ export default function AdminDashboardPage() {
                   </button>
                 </div>
 
-                {/* ── 이번달 / 이번주 요약 ── */}
-                <div className="grid grid-cols-2 gap-3 mb-5">
-                  {[
-                    { title: 'This Month', period: `${mStart} ~ ${mEnd}`, ...mStats, icon: 'calendar_month', accent: '#8b5cf6' },
-                    { title: 'This Week', period: `${wStart} ~ ${wEnd}`, ...wStats, icon: 'date_range', accent: '#3b82f6' },
-                  ].map((s, i) => (
-                    <div key={i} className="p-4 rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white">
-                      <div className="flex items-center gap-1.5 mb-3">
-                        <span className="material-symbols-outlined text-sm" style={{ color: s.accent }}>{s.icon}</span>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.title}</span>
-                      </div>
-                      <p className="text-[10px] text-slate-300 mb-2">{s.period}</p>
-                      <div className="flex items-baseline gap-1 mb-3">
-                        <span className="text-2xl font-extrabold text-slate-800">{s.total}</span>
-                        <span className="text-[11px] text-slate-400">발행</span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {[
-                          { label: '사용됨', value: s.used, color: '#10b981', icon: 'check_circle' },
-                          { label: '진행중', value: s.active, color: '#3b82f6', icon: 'hourglass_top' },
-                          { label: '만료', value: s.expired, color: '#ef4444', icon: 'timer_off' },
-                        ].map((row, ri) => (
-                          <div key={ri} className="flex items-center gap-2">
-                            <span className="material-symbols-outlined text-xs" style={{ color: row.color }}>{row.icon}</span>
-                            <span className="text-[11px] text-slate-500 flex-1">{row.label}</span>
-                            <span className="text-[12px] font-bold text-slate-700">{row.value}</span>
+                {/* ── 전체 쿠폰 현황 도넛 차트 ── */}
+                {(() => {
+                  const totalAll = allCoupons.length;
+                  const usedAll = allCoupons.filter(c => c.isUsed).length;
+                  const expiredAll = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
+                  const activeAll = allCoupons.filter(c => !c.isUsed && c.expiryDate >= todayStr).length;
+                  const segs = [
+                    { label: '사용됨', value: usedAll, color: '#10b981', icon: 'check_circle' },
+                    { label: '진행중', value: activeAll, color: '#3b82f6', icon: 'hourglass_top' },
+                    { label: '만료', value: expiredAll, color: '#ef4444', icon: 'timer_off' },
+                  ];
+                  const r = 46, cx = 56, cy = 56, stroke = 14;
+                  const circumference = 2 * Math.PI * r;
+                  let offset = 0;
+                  const useRate = totalAll > 0 ? Math.round((usedAll / totalAll) * 100) : 0;
+                  return (
+                    <div className="mb-5 p-4 rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white">
+                      <div className="flex items-center gap-4">
+                        {/* 도넛 */}
+                        <div className="relative shrink-0" style={{ width: 112, height: 112 }}>
+                          <svg viewBox="0 0 112 112" className="w-full h-full -rotate-90">
+                            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
+                            {totalAll > 0 && segs.map((seg, si) => {
+                              if (seg.value === 0) return null;
+                              const pct = seg.value / totalAll;
+                              const dashLen = pct * circumference;
+                              const gap = segs.filter(s => s.value > 0).length > 1 ? 3 : 0;
+                              const el = (
+                                <circle key={si} cx={cx} cy={cy} r={r} fill="none"
+                                  stroke={seg.color} strokeWidth={stroke}
+                                  strokeDasharray={`${Math.max(dashLen - gap, 1)} ${circumference - Math.max(dashLen - gap, 1)}`}
+                                  strokeDashoffset={-offset}
+                                  strokeLinecap="round" className="transition-all duration-700" />
+                              );
+                              offset += dashLen;
+                              return el;
+                            })}
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-2xl font-extrabold text-slate-800">{totalAll}</span>
+                            <span className="text-[9px] text-slate-400 font-semibold">총 발행</span>
                           </div>
-                        ))}
-                      </div>
-                      {/* 사용률 바 */}
-                      <div className="mt-3 pt-2 border-t border-slate-50">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] text-slate-400">사용률</span>
-                          <span className="text-[11px] font-extrabold" style={{ color: s.rate >= 50 ? '#10b981' : s.rate >= 25 ? '#f59e0b' : '#94a3b8' }}>{s.rate}%</span>
                         </div>
-                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${s.rate}%`, backgroundColor: s.rate >= 50 ? '#10b981' : s.rate >= 25 ? '#f59e0b' : '#94a3b8' }} />
+                        {/* 범례 + 수치 */}
+                        <div className="flex-1 min-w-0 space-y-2.5">
+                          {segs.map((seg, si) => {
+                            const pct = totalAll > 0 ? Math.round((seg.value / totalAll) * 100) : 0;
+                            return (
+                              <div key={si}>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
+                                  <span className="text-[11px] text-slate-500 flex-1">{seg.label}</span>
+                                  <span className="text-[13px] font-extrabold text-slate-700">{seg.value}</span>
+                                  <span className="text-[11px] font-bold w-9 text-right" style={{ color: seg.color }}>{pct}%</span>
+                                </div>
+                                <div className="ml-[18px] h-1 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: seg.color }} />
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
 
                 {/* ── Best Performer 하이라이트 ── */}
                 {bestPerformer && bestPerformer.rate > 0 && (
