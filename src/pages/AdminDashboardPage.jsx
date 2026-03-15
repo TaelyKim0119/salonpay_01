@@ -1532,23 +1532,23 @@ export default function AdminDashboardPage() {
                   </div>
                   <div className="space-y-3">
                     {insights.slice(0, 4).map((ins, i) => (
-                      <div key={i} className="rounded-xl overflow-hidden bg-white/15 backdrop-blur-sm">
+                      <div key={i} className="rounded-xl overflow-hidden bg-white shadow-sm">
                         <div className="px-3 py-2.5">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="material-symbols-outlined text-sm text-white/80">{ins.icon}</span>
-                            <span className="text-[12px] font-bold text-white">{ins.title}</span>
+                            <span className="material-symbols-outlined text-sm" style={{ color: ins.color }}>{ins.icon}</span>
+                            <span className="text-[12px] font-bold text-slate-800">{ins.title}</span>
                           </div>
-                          <p className="text-[10px] text-white/50 mb-1.5">{ins.desc}</p>
-                          <p className="text-[11px] text-white/80 leading-relaxed">{ins.advice}</p>
+                          <p className="text-[10px] text-slate-400 mb-1.5">{ins.desc}</p>
+                          <p className="text-[11px] text-slate-600 leading-relaxed">{ins.advice}</p>
                         </div>
                         {ins.couponText && (
                           <button
                             onClick={() => navigate('/admin/coupons')}
-                            className="flex items-center gap-2 w-full px-3 py-2 bg-white/10 border-t border-white/10 hover:bg-white/20 transition-colors text-left"
+                            className="flex items-center gap-2 w-full px-3 py-2 bg-orange-50 border-t border-orange-100 hover:bg-orange-100 transition-colors text-left"
                           >
-                            <span className="material-symbols-outlined text-white text-sm">{ins.couponIcon}</span>
-                            <span className="text-[11px] font-semibold text-white flex-1">{ins.couponText}</span>
-                            <span className="material-symbols-outlined text-white/40 text-sm">arrow_forward</span>
+                            <span className="material-symbols-outlined text-orange-500 text-sm">{ins.couponIcon}</span>
+                            <span className="text-[11px] font-semibold text-orange-600 flex-1">{ins.couponText}</span>
+                            <span className="material-symbols-outlined text-orange-300 text-sm">arrow_forward</span>
                           </button>
                         )}
                       </div>
