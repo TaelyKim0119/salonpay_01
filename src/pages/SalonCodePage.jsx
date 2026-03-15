@@ -110,54 +110,62 @@ export default function SalonCodePage() {
 
       {/* ── Mobile ── */}
       <div className="lg:hidden max-w-md mx-auto min-h-screen bg-white shadow-2xl flex flex-col">
-        <div className="flex items-center px-4 h-14">
+        {/* 상단 이미지 */}
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=800&q=80"
+            alt="Salon"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white" />
           <button
             onClick={() => navigate('/')}
-            className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+            className="absolute top-3 left-3 w-9 h-9 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm"
           >
-            <span className="material-symbols-outlined text-[22px] text-slate-700">arrow_back</span>
+            <span className="material-symbols-outlined text-[20px] text-slate-700">arrow_back</span>
           </button>
-          <h1 className="text-[17px] font-bold text-slate-800 flex-1 text-center pr-10">
+          <h1 className="absolute bottom-4 left-6 text-[17px] font-bold text-slate-800">
             {t('enterSalonCode') || 'Salon Code'}
           </h1>
         </div>
-        <div className="flex-1 flex flex-col px-6 pt-12">
+        <div className="flex-1 flex flex-col px-6 pt-6">
           {formContent}
         </div>
       </div>
 
       {/* ── Desktop ── */}
       <div className="hidden lg:flex min-h-screen">
-        {/* Left: Branding Panel */}
-        <div className="w-1/2 bg-gradient-to-br from-primary via-primary-dark to-rose-accent flex flex-col items-center justify-center p-16 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-20 left-16"><span className="material-symbols-outlined text-white text-[120px]">spa</span></div>
-            <div className="absolute bottom-32 right-20"><span className="material-symbols-outlined text-white text-[80px]">favorite</span></div>
-            <div className="absolute top-1/2 right-1/3"><span className="material-symbols-outlined text-white text-[60px]">auto_awesome</span></div>
-          </div>
-          <div className="relative z-10 text-center max-w-md">
-            <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-8 border border-white/30">
-              <span className="material-symbols-outlined text-white text-[40px]">storefront</span>
+        {/* Left: Image Panel */}
+        <div className="w-1/2 relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&q=80"
+            alt="Beauty Salon"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-12 z-10">
+            <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/30">
+              <span className="material-symbols-outlined text-white text-[28px]">storefront</span>
             </div>
-            <h1 className="text-white text-4xl font-extrabold tracking-tight mb-4">
+            <h1 className="text-white text-4xl font-extrabold tracking-tight mb-3">
               Welcome to <span className="text-white/90">SalonPay</span>
             </h1>
-            <p className="text-white/70 text-lg leading-relaxed mb-8">
+            <p className="text-white/60 text-base leading-relaxed mb-6 max-w-sm">
               {t('enterSalonCodeDesc') || 'Connect to your salon with a simple code and start earning loyalty points.'}
             </p>
-            <div className="flex items-center justify-center gap-6 text-white/50">
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-3xl text-white/60">loyalty</span>
+            <div className="flex items-center gap-6 text-white/50">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-xl text-white/60">loyalty</span>
                 <span className="text-xs font-bold uppercase tracking-wider">Points</span>
               </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-3xl text-white/60">confirmation_number</span>
+              <div className="w-px h-6 bg-white/20" />
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-xl text-white/60">confirmation_number</span>
                 <span className="text-xs font-bold uppercase tracking-wider">Coupons</span>
               </div>
-              <div className="w-px h-10 bg-white/20" />
-              <div className="flex flex-col items-center gap-2">
-                <span className="material-symbols-outlined text-3xl text-white/60">history</span>
+              <div className="w-px h-6 bg-white/20" />
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-xl text-white/60">history</span>
                 <span className="text-xs font-bold uppercase tracking-wider">History</span>
               </div>
             </div>
