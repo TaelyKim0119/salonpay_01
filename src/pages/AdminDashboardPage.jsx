@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useI18n } from '../contexts/I18nContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -412,13 +413,7 @@ export default function AdminDashboardPage() {
           })()}
 
           {/* Revenue Chart - full width */}
-          <section className={`bg-white rounded-xl shadow-sm border border-slate-100 transition-all ${expandedChart === 'revenue' ? 'lg:p-8 p-5 fixed inset-0 z-50 rounded-none border-none overflow-y-auto' : 'p-5 lg:p-8'}`}>
-              {expandedChart === 'revenue' && (
-                <button onClick={() => setExpandedChart(null)} className="lg:hidden flex items-center gap-2 mb-4 text-slate-500">
-                  <span className="material-symbols-outlined text-lg">close</span>
-                  <span className="text-sm font-semibold">닫기</span>
-                </button>
-              )}
+          <section id="chart-revenue-src" className="bg-white p-5 lg:p-8 rounded-xl shadow-sm border border-slate-100">
               <div className="flex items-center justify-between mb-6 lg:mb-8">
                 <div>
                   <h2 className="text-base lg:text-lg font-bold">{chartPeriod === 'weekly' ? (t('weeklyVisitTrends') || 'Weekly Revenue') : (t('monthlyRevenue') || 'Monthly Revenue')}</h2>
@@ -433,9 +428,9 @@ export default function AdminDashboardPage() {
                       </button>
                     ))}
                   </div>
-                  <button onClick={() => setExpandedChart(expandedChart === 'revenue' ? null : 'revenue')}
+                  <button onClick={() => setExpandedChart('revenue')}
                     className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
-                    <span className="material-symbols-outlined text-slate-500 text-[16px]">{expandedChart === 'revenue' ? 'close_fullscreen' : 'open_in_full'}</span>
+                    <span className="material-symbols-outlined text-slate-500 text-[16px]">open_in_full</span>
                   </button>
                 </div>
               </div>
@@ -1192,13 +1187,7 @@ export default function AdminDashboardPage() {
             }
 
             return (
-              <section className={`bg-white rounded-xl shadow-sm border border-slate-100 transition-all ${expandedChart === 'coupon' ? 'p-5 fixed inset-0 z-50 rounded-none border-none overflow-y-auto' : 'p-5 lg:p-6'}`}>
-                {expandedChart === 'coupon' && (
-                  <button onClick={() => setExpandedChart(null)} className="lg:hidden flex items-center gap-2 mb-4 text-slate-500">
-                    <span className="material-symbols-outlined text-lg">close</span>
-                    <span className="text-sm font-semibold">닫기</span>
-                  </button>
-                )}
+              <section id="chart-coupon-src" className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
@@ -1208,9 +1197,9 @@ export default function AdminDashboardPage() {
                     <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
                       쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
                     </button>
-                    <button onClick={() => setExpandedChart(expandedChart === 'coupon' ? null : 'coupon')}
+                    <button onClick={() => setExpandedChart('coupon')}
                       className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
-                      <span className="material-symbols-outlined text-slate-500 text-[16px]">{expandedChart === 'coupon' ? 'close_fullscreen' : 'open_in_full'}</span>
+                      <span className="material-symbols-outlined text-slate-500 text-[16px]">open_in_full</span>
                     </button>
                   </div>
                 </div>
@@ -1852,6 +1841,36 @@ export default function AdminDashboardPage() {
           </button>
         </nav>
       </div>
+      {/* 모바일 차트 확대 Portal */}
+      {expandedChart && createPortal(
+        <div className="lg:hidden fixed inset-0 z-[9999] bg-white flex flex-col" onClick={() => setExpandedChart(null)}>
+          <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 shrink-0" onClick={e => e.stopPropagation()}>
+            <span className="text-sm font-bold text-slate-800">
+              {expandedChart === 'revenue' ? (chartPeriod === 'weekly' ? 'Weekly Revenue' : 'Monthly Revenue') : 'Coupon Analysis'}
+            </span>
+            <button onClick={() => setExpandedChart(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100">
+              <span className="material-symbols-outlined text-slate-500">close</span>
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-5" onClick={e => e.stopPropagation()}>
+            {expandedChart === 'revenue' && (
+              <div ref={el => {
+                if (el && document.getElementById('chart-revenue-src')) {
+                  el.innerHTML = document.getElementById('chart-revenue-src').innerHTML;
+                }
+              }} />
+            )}
+            {expandedChart === 'coupon' && (
+              <div ref={el => {
+                if (el && document.getElementById('chart-coupon-src')) {
+                  el.innerHTML = document.getElementById('chart-coupon-src').innerHTML;
+                }
+              }} />
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
