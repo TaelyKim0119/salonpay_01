@@ -1156,53 +1156,75 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Type Breakdown */}
-                <div className="space-y-2.5">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">타입별 반응</p>
-                  {typeStats.map((ts) => (
-                    <div key={ts.type} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: ts.color + '15' }}>
-                        <span className="material-symbols-outlined text-base" style={{ color: ts.color }}>{ts.icon}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-[12px] font-bold text-slate-700">{ts.label}</span>
-                          <span className="text-[11px] text-slate-400">{ts.used}/{ts.total}건 <span className="font-bold" style={{ color: ts.color }}>{ts.rate}%</span></span>
-                        </div>
-                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${(ts.total / maxTypeTotal) * 100}%`, backgroundColor: ts.color + '30' }}>
-                            <div className="h-full rounded-full" style={{ width: `${ts.rate}%`, backgroundColor: ts.color }} />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                {/* 월별 타입별 세로 막대그래프 (최근 3개월) */}
+                {(() => {
+                  const months = [];
+                  for (let i = 0; i < 3; i++) {
+                    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    const label = `${d.getMonth() + 1}월`;
+                    months.push({ ym, label });
+                  }
+                  const allTypes = ['birthday', 'loyalty', 'winback', 'special'];
+                  // 월별 타입별 발행/사용 집계
+                  const monthData = months.map(m => {
+                    const mCoupons = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(m.ym));
+                    const byType = allTypes.map(type => {
+                      const ofType = mCoupons.filter(c => c.type === type);
+                      const usedOfType = ofType.filter(c => c.isUsed).length;
+                      return { type, total: ofType.length, used: usedOfType };
+                    });
+                    return { ...m, byType, total: mCoupons.length, used: mCoupons.filter(c => c.isUsed).length };
+                  });
+                  const maxBar = Math.max(...monthData.flatMap(m => m.byType.map(t => t.total)), 1);
+                  const barH = 100;
 
-                {/* Recent Used */}
-                {recentUsed.length > 0 && (
-                  <div className="mt-5 pt-4 border-t border-slate-50">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">최근 사용 내역</p>
-                    <div className="space-y-1.5">
-                      {recentUsed.map((cp) => {
-                        const cust = customers.find(c => c.id === cp.customerId);
-                        return (
-                          <div key={cp.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: (typeColors[cp.type] || '#94a3b8') + '20' }}>
-                              <span className="material-symbols-outlined text-xs" style={{ color: typeColors[cp.type] || '#94a3b8' }}>{typeIcons[cp.type] || 'confirmation_number'}</span>
+                  return (
+                    <div>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">월별 타입 반응</p>
+                      <div className="flex gap-4 lg:gap-6">
+                        {monthData.map((m, mi) => (
+                          <div key={mi} className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1 mb-2">
+                              <span className="text-[12px] font-extrabold text-slate-700">{m.label}</span>
+                              {mi === 0 && <span className="text-[8px] font-bold text-white bg-accent px-1 py-0.5 rounded-full">NOW</span>}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <span className="text-[12px] font-semibold text-slate-700 truncate">{cust?.name || '-'}</span>
-                              <span className="text-[10px] text-slate-300 mx-1.5">·</span>
-                              <span className="text-[10px] text-slate-400">{typeLabels[cp.type] || cp.type} {cp.isPercent ? `${cp.amount}%` : `${(cp.amount / 10000).toFixed(cp.amount % 10000 === 0 ? 0 : 1)}만원`}</span>
+                            {/* 세로 막대들 */}
+                            <div className="flex items-end gap-1.5 justify-center" style={{ height: barH }}>
+                              {m.byType.map((t) => {
+                                const h = maxBar > 0 ? Math.max((t.total / maxBar) * barH, t.total > 0 ? 8 : 0) : 0;
+                                const usedH = t.total > 0 ? (t.used / t.total) * h : 0;
+                                return (
+                                  <div key={t.type} className="flex flex-col items-center gap-0.5 flex-1">
+                                    {t.total > 0 && <span className="text-[9px] font-bold text-slate-400">{t.total}</span>}
+                                    <div className="w-full max-w-[24px] rounded-t-md overflow-hidden relative" style={{ height: h, backgroundColor: (typeColors[t.type] || '#94a3b8') + '20' }}>
+                                      <div className="absolute bottom-0 left-0 right-0 rounded-t-md" style={{ height: usedH, backgroundColor: typeColors[t.type] || '#94a3b8' }} />
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
-                            <span className="text-[10px] text-slate-300 shrink-0">{cp.usedAt}</span>
+                            {/* 사용률 */}
+                            <div className="text-center mt-1.5">
+                              <span className="text-[10px] font-bold" style={{ color: m.total > 0 && m.used / m.total >= 0.5 ? '#10b981' : '#94a3b8' }}>
+                                {m.total > 0 ? Math.round((m.used / m.total) * 100) : 0}%
+                              </span>
+                            </div>
                           </div>
-                        );
-                      })}
+                        ))}
+                      </div>
+                      {/* 범례 */}
+                      <div className="flex justify-center gap-3 mt-3 pt-3 border-t border-slate-50">
+                        {allTypes.map(type => (
+                          <div key={type} className="flex items-center gap-1">
+                            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: typeColors[type] }} />
+                            <span className="text-[9px] text-slate-400 font-medium">{typeLabels[type]}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </section>
             );
           })()}
