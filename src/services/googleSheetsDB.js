@@ -63,11 +63,23 @@ const DEMO_VISITS = [
 ];
 
 const DEMO_COUPONS = [
-  { id: 'cp1', customerId: 'c1', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-04-15', isUsed: false, usedAt: null, createdAt: '2026-03-01' },
-  { id: 'cp2', customerId: 'c1', type: 'loyalty', amount: 15, isPercent: true, expiryDate: '2026-06-30', isUsed: false, usedAt: null, createdAt: '2026-03-10' },
-  { id: 'cp3', customerId: 'c4', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-05-28', isUsed: false, usedAt: null, createdAt: '2026-04-01' },
-  { id: 'cp4', customerId: 'c6', type: 'referral', amount: 20000, isPercent: false, expiryDate: '2026-04-30', isUsed: false, usedAt: null, createdAt: '2026-02-15' },
-  { id: 'cp5', customerId: 'c8', type: 'loyalty', amount: 10, isPercent: true, expiryDate: '2026-05-31', isUsed: false, usedAt: null, createdAt: '2026-03-14' },
+  // 사용 완료 쿠폰
+  { id: 'cp1', customerId: 'c1', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-02-15', isUsed: true, usedAt: '2026-01-20', createdAt: '2026-01-01' },
+  { id: 'cp2', customerId: 'c2', type: 'loyalty', amount: 15, isPercent: true, expiryDate: '2026-02-28', isUsed: true, usedAt: '2026-02-10', createdAt: '2026-01-15' },
+  { id: 'cp3', customerId: 'c3', type: 'winback', amount: 20, isPercent: true, expiryDate: '2026-02-20', isUsed: true, usedAt: '2026-02-05', createdAt: '2026-01-10' },
+  { id: 'cp4', customerId: 'c4', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-03-15', isUsed: true, usedAt: '2026-02-28', createdAt: '2026-02-01' },
+  { id: 'cp5', customerId: 'c5', type: 'special', amount: 5000, isPercent: false, expiryDate: '2026-03-10', isUsed: true, usedAt: '2026-03-01', createdAt: '2026-02-10' },
+  { id: 'cp6', customerId: 'c6', type: 'loyalty', amount: 10, isPercent: true, expiryDate: '2026-03-20', isUsed: true, usedAt: '2026-03-05', createdAt: '2026-02-20' },
+  { id: 'cp7', customerId: 'c1', type: 'winback', amount: 20, isPercent: true, expiryDate: '2026-03-25', isUsed: true, usedAt: '2026-03-12', createdAt: '2026-02-25' },
+  { id: 'cp8', customerId: 'c7', type: 'special', amount: 5000, isPercent: false, expiryDate: '2026-03-30', isUsed: true, usedAt: '2026-03-10', createdAt: '2026-03-01' },
+  // 만료된 미사용 쿠폰
+  { id: 'cp9', customerId: 'c8', type: 'winback', amount: 20, isPercent: true, expiryDate: '2026-02-28', isUsed: false, usedAt: null, createdAt: '2026-01-28' },
+  { id: 'cp10', customerId: 'c3', type: 'special', amount: 5000, isPercent: false, expiryDate: '2026-03-01', isUsed: false, usedAt: null, createdAt: '2026-02-01' },
+  // 활성 미사용 쿠폰
+  { id: 'cp11', customerId: 'c1', type: 'birthday', amount: 10000, isPercent: false, expiryDate: '2026-04-15', isUsed: false, usedAt: null, createdAt: '2026-03-10' },
+  { id: 'cp12', customerId: 'c4', type: 'loyalty', amount: 15, isPercent: true, expiryDate: '2026-05-28', isUsed: false, usedAt: null, createdAt: '2026-03-14' },
+  { id: 'cp13', customerId: 'c6', type: 'winback', amount: 20, isPercent: true, expiryDate: '2026-04-30', isUsed: false, usedAt: null, createdAt: '2026-03-01' },
+  { id: 'cp14', customerId: 'c8', type: 'special', amount: 5000, isPercent: false, expiryDate: '2026-05-31', isUsed: false, usedAt: null, createdAt: '2026-03-14' },
 ];
 
 const DEMO_BOOKINGS = [

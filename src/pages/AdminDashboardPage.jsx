@@ -91,6 +91,7 @@ export default function AdminDashboardPage() {
   const [recentVisits, setRecentVisits] = useState([]);
   const [allVisits, setAllVisits] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [allCoupons, setAllCoupons] = useState([]);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
   const [chartPeriod, setChartPeriod] = useState('weekly');
@@ -118,13 +119,15 @@ export default function AdminDashboardPage() {
   const loadDashboard = async () => {
     try {
       showLoading(t('loadingData'));
-      const [allCustomers, dashStats, fetchedVisits, fetchedBookings] = await Promise.all([
+      const [allCustomers, dashStats, fetchedVisits, fetchedBookings, fetchedCoupons] = await Promise.all([
         sheetsDB.getAllCustomers(),
         sheetsDB.getDashboardStats(),
         sheetsDB.getAllVisits(),
-        sheetsDB.getAllBookings()
+        sheetsDB.getAllBookings(),
+        sheetsDB.getAllCoupons()
       ]);
       setBookings(fetchedBookings.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time)));
+      setAllCoupons(fetchedCoupons);
 
       setCustomers(allCustomers);
       setFilteredCustomers(allCustomers);
@@ -1060,6 +1063,289 @@ export default function AdminDashboardPage() {
               )}
             </div>
           </section>
+          {/* ── Coupon Response Analysis ── */}
+          {(() => {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const total = allCoupons.length;
+            const used = allCoupons.filter(c => c.isUsed).length;
+            const expired = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
+            const active = allCoupons.filter(c => !c.isUsed && c.expiryDate >= todayStr).length;
+            const useRate = total > 0 ? Math.round((used / total) * 100) : 0;
+
+            // 타입별 분석
+            const typeLabels = { birthday: 'Birthday', loyalty: 'Loyalty', winback: 'Win-back', special: 'Special', referral: 'Referral' };
+            const typeColors = { birthday: '#ec4899', loyalty: '#f59e0b', winback: '#8b5cf6', special: '#3b82f6', referral: '#10b981' };
+            const typeIcons = { birthday: 'cake', loyalty: 'favorite', winback: 'replay', special: 'auto_awesome', referral: 'group_add' };
+            const types = [...new Set(allCoupons.map(c => c.type))];
+            const typeStats = types.map(type => {
+              const ofType = allCoupons.filter(c => c.type === type);
+              const usedOfType = ofType.filter(c => c.isUsed).length;
+              return {
+                type,
+                label: typeLabels[type] || type,
+                color: typeColors[type] || '#94a3b8',
+                icon: typeIcons[type] || 'confirmation_number',
+                total: ofType.length,
+                used: usedOfType,
+                rate: ofType.length > 0 ? Math.round((usedOfType / ofType.length) * 100) : 0,
+              };
+            }).sort((a, b) => b.total - a.total);
+
+            // 최근 사용 내역
+            const recentUsed = allCoupons
+              .filter(c => c.isUsed && c.usedAt)
+              .sort((a, b) => (b.usedAt || '').localeCompare(a.usedAt || ''))
+              .slice(0, 4);
+
+            if (total === 0) return null;
+
+            const maxTypeTotal = Math.max(...typeStats.map(t => t.total), 1);
+
+            return (
+              <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
+                    <h2 className="text-base font-bold">Coupon Analysis</h2>
+                  </div>
+                  <button
+                    onClick={() => navigate('/admin/coupons')}
+                    className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5"
+                  >
+                    쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                </div>
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-4 gap-2 mb-5">
+                  {[
+                    { label: 'Total', value: total, color: '#64748b', icon: 'inventory_2' },
+                    { label: 'Used', value: used, color: '#10b981', icon: 'check_circle' },
+                    { label: 'Active', value: active, color: '#3b82f6', icon: 'hourglass_top' },
+                    { label: 'Expired', value: expired, color: '#ef4444', icon: 'timer_off' },
+                  ].map((s, i) => (
+                    <div key={i} className="text-center p-3 rounded-xl bg-slate-50 border border-slate-100">
+                      <span className="material-symbols-outlined text-base mb-1 block" style={{ color: s.color }}>{s.icon}</span>
+                      <p className="text-lg font-extrabold text-slate-800">{s.value}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Use Rate Ring */}
+                <div className="flex items-center gap-5 mb-5 p-4 rounded-xl bg-gradient-to-r from-violet-50 to-white border border-violet-100/50">
+                  <div className="relative w-16 h-16 shrink-0">
+                    <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                      <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" strokeWidth="3" />
+                      <circle cx="18" cy="18" r="14" fill="none" stroke="#8b5cf6" strokeWidth="3"
+                        strokeDasharray={`${useRate * 0.88} ${88 - useRate * 0.88}`} strokeLinecap="round" />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-sm font-extrabold text-violet-600">{useRate}%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">전체 사용률</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">발행 {total}건 중 {used}건 사용됨</p>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+                      {useRate >= 60 ? '쿠폰 반응이 좋아요! 타겟 쿠폰을 더 적극 활용해보세요.' :
+                       useRate >= 30 ? '보통 수준이에요. 유효기간을 짧게 하면 사용률이 올라갈 수 있어요.' :
+                       '사용률이 낮아요. 쿠폰 금액을 높이거나 문자 알림을 보내보세요.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Type Breakdown */}
+                <div className="space-y-2.5">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">타입별 반응</p>
+                  {typeStats.map((ts) => (
+                    <div key={ts.type} className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: ts.color + '15' }}>
+                        <span className="material-symbols-outlined text-base" style={{ color: ts.color }}>{ts.icon}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[12px] font-bold text-slate-700">{ts.label}</span>
+                          <span className="text-[11px] text-slate-400">{ts.used}/{ts.total}건 <span className="font-bold" style={{ color: ts.color }}>{ts.rate}%</span></span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${(ts.total / maxTypeTotal) * 100}%`, backgroundColor: ts.color + '30' }}>
+                            <div className="h-full rounded-full" style={{ width: `${ts.rate}%`, backgroundColor: ts.color }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Recent Used */}
+                {recentUsed.length > 0 && (
+                  <div className="mt-5 pt-4 border-t border-slate-50">
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">최근 사용 내역</p>
+                    <div className="space-y-1.5">
+                      {recentUsed.map((cp) => {
+                        const cust = customers.find(c => c.id === cp.customerId);
+                        return (
+                          <div key={cp.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: (typeColors[cp.type] || '#94a3b8') + '20' }}>
+                              <span className="material-symbols-outlined text-xs" style={{ color: typeColors[cp.type] || '#94a3b8' }}>{typeIcons[cp.type] || 'confirmation_number'}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[12px] font-semibold text-slate-700 truncate">{cust?.name || '-'}</span>
+                              <span className="text-[10px] text-slate-300 mx-1.5">·</span>
+                              <span className="text-[10px] text-slate-400">{typeLabels[cp.type] || cp.type} {cp.isPercent ? `${cp.amount}%` : `${(cp.amount / 10000).toFixed(cp.amount % 10000 === 0 ? 0 : 1)}만원`}</span>
+                            </div>
+                            <span className="text-[10px] text-slate-300 shrink-0">{cp.usedAt}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </section>
+            );
+          })()}
+
+          {/* ── Monthly Popular Services ── */}
+          {(() => {
+            const today = new Date();
+            // 최근 6개월 데이터
+            const monthlyData = [];
+            for (let i = 0; i < 6; i++) {
+              const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+              const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              const label = `${d.getMonth() + 1}월`;
+              const monthVisits = allVisits.filter(v => v.date && v.date.startsWith(ym));
+
+              // 서비스별 집계 (개별 서비스명 기준)
+              const serviceMap = {};
+              monthVisits.forEach(v => {
+                const name = v.service || 'Other';
+                if (!serviceMap[name]) serviceMap[name] = { count: 0, revenue: 0, cat: getServiceCat(name) };
+                serviceMap[name].count++;
+                serviceMap[name].revenue += (Number(v.amount) || 0);
+              });
+
+              const ranked = Object.entries(serviceMap)
+                .map(([name, data]) => ({ name, ...data }))
+                .sort((a, b) => b.revenue - a.revenue);
+
+              monthlyData.push({ ym, label, visits: monthVisits.length, ranked });
+            }
+
+            // 데모 모드 fallback
+            const useDemo = sheetsDB.isDemoMode;
+            const demoMonthlyServices = [
+              { label: `${today.getMonth() + 1}월`, visits: 38, ranked: [
+                { name: '발레아쥬 염색', count: 9, revenue: 2700000, cat: { label: 'Color', color: '#8b5cf6' } },
+                { name: 'S컬 펌', count: 7, revenue: 1960000, cat: { label: 'Perm', color: '#ec4899' } },
+                { name: '커트', count: 12, revenue: 1440000, cat: { label: 'Cut', color: '#3b82f6' } },
+                { name: '두피 클리닉', count: 5, revenue: 750000, cat: { label: 'Care', color: '#10b981' } },
+                { name: '글로시 염색', count: 5, revenue: 1000000, cat: { label: 'Color', color: '#8b5cf6' } },
+              ]},
+              { label: `${((today.getMonth()) || 12)}월`, visits: 42, ranked: [
+                { name: '디지털 펌', count: 10, revenue: 2800000, cat: { label: 'Perm', color: '#ec4899' } },
+                { name: '하이라이트', count: 8, revenue: 2400000, cat: { label: 'Color', color: '#8b5cf6' } },
+                { name: '커트', count: 14, revenue: 1680000, cat: { label: 'Cut', color: '#3b82f6' } },
+                { name: '영양 클리닉', count: 6, revenue: 900000, cat: { label: 'Care', color: '#10b981' } },
+                { name: '매직 셋팅펌', count: 4, revenue: 640000, cat: { label: 'Perm', color: '#ec4899' } },
+              ]},
+              { label: `${((today.getMonth() - 1) || 12)}월`, visits: 35, ranked: [
+                { name: '컬러 체인지', count: 8, revenue: 2400000, cat: { label: 'Color', color: '#8b5cf6' } },
+                { name: '볼륨 펌', count: 6, revenue: 1680000, cat: { label: 'Perm', color: '#ec4899' } },
+                { name: '커트', count: 11, revenue: 1320000, cat: { label: 'Cut', color: '#3b82f6' } },
+                { name: '두피 스케일링', count: 5, revenue: 650000, cat: { label: 'Care', color: '#10b981' } },
+                { name: '글레이징', count: 5, revenue: 850000, cat: { label: 'Color', color: '#8b5cf6' } },
+              ]},
+            ];
+
+            const data = useDemo ? demoMonthlyServices : monthlyData.filter(m => m.visits > 0);
+            if (data.length === 0) return null;
+
+            // 이번달 vs 지난달 비교 (트렌드)
+            const thisM = data[0];
+            const lastM = data[1];
+            let trendInsights = [];
+            if (thisM && lastM) {
+              // 이번달 새로 등장한 인기 서비스
+              const lastNames = new Set((lastM.ranked || []).slice(0, 5).map(s => s.name));
+              const newHits = (thisM.ranked || []).slice(0, 3).filter(s => !lastNames.has(s.name));
+              if (newHits.length > 0) {
+                trendInsights.push({ icon: 'new_releases', color: '#f59e0b', text: `${newHits.map(s => s.name).join(', ')} — 이번달 새로운 인기 시술!` });
+              }
+              // 1위 변동
+              if (thisM.ranked?.[0] && lastM.ranked?.[0] && thisM.ranked[0].name !== lastM.ranked[0].name) {
+                trendInsights.push({ icon: 'swap_vert', color: '#8b5cf6', text: `1위 ${lastM.ranked[0].name} → ${thisM.ranked[0].name}` });
+              }
+            }
+
+            return (
+              <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
+                <div className="flex items-center gap-2 mb-5">
+                  <span className="material-symbols-outlined text-pink-500 text-lg">local_fire_department</span>
+                  <h2 className="text-base font-bold">Popular Services</h2>
+                  <span className="text-[10px] text-slate-300 font-medium ml-auto">Monthly Ranking</span>
+                </div>
+
+                {/* Trend Insights */}
+                {trendInsights.length > 0 && (
+                  <div className="mb-4 space-y-1.5">
+                    {trendInsights.map((t, i) => (
+                      <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50/60 border border-amber-100/50">
+                        <span className="material-symbols-outlined text-sm" style={{ color: t.color }}>{t.icon}</span>
+                        <span className="text-[11px] font-medium text-slate-600">{t.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Monthly Tabs */}
+                <div className="space-y-5">
+                  {data.slice(0, 3).map((month, mi) => (
+                    <div key={mi}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[12px] font-extrabold text-slate-800">{month.label}</span>
+                        <span className="text-[10px] text-slate-300">총 {month.visits}건</span>
+                        {mi === 0 && <span className="text-[9px] font-bold text-white bg-accent px-1.5 py-0.5 rounded-full ml-1">NOW</span>}
+                      </div>
+                      <div className="space-y-1.5">
+                        {(month.ranked || []).slice(0, 5).map((svc, si) => {
+                          const maxRev = month.ranked[0]?.revenue || 1;
+                          const barPct = Math.round((svc.revenue / maxRev) * 100);
+                          const medal = si === 0 ? '🥇' : si === 1 ? '🥈' : si === 2 ? '🥉' : null;
+                          return (
+                            <div key={si} className="flex items-center gap-2.5">
+                              <span className="w-5 text-center shrink-0">
+                                {medal ? <span className="text-sm">{medal}</span> : <span className="text-[10px] text-slate-300 font-bold">{si + 1}</span>}
+                              </span>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[12px] font-semibold text-slate-700 truncate">{svc.name}</span>
+                                    <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: svc.cat.color }} title={svc.cat.label} />
+                                  </div>
+                                  <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-[10px] text-slate-400">{svc.count}건</span>
+                                    <span className="text-[11px] font-bold text-slate-600">{formatNumber(Math.round(svc.revenue / 10000))}만</span>
+                                  </div>
+                                </div>
+                                <div className="h-1 bg-slate-100 rounded-full overflow-hidden">
+                                  <div className="h-full rounded-full transition-all" style={{ width: `${barPct}%`, backgroundColor: svc.cat.color, opacity: 0.7 }} />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {mi < Math.min(data.length, 3) - 1 && <div className="border-t border-slate-50 mt-4" />}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })()}
+
           </div>
 
           </div>{/* end flex-1 main content */}
