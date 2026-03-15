@@ -1067,40 +1067,90 @@ export default function AdminDashboardPage() {
           {(() => {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
-            const total = allCoupons.length;
-            const used = allCoupons.filter(c => c.isUsed).length;
-            const expired = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
-            const active = allCoupons.filter(c => !c.isUsed && c.expiryDate >= todayStr).length;
-            const useRate = total > 0 ? Math.round((used / total) * 100) : 0;
-
-            // 타입별 분석
             const typeLabels = { birthday: 'Birthday', loyalty: 'Loyalty', winback: 'Win-back', special: 'Special', referral: 'Referral' };
             const typeColors = { birthday: '#ec4899', loyalty: '#f59e0b', winback: '#8b5cf6', special: '#3b82f6', referral: '#10b981' };
             const typeIcons = { birthday: 'cake', loyalty: 'favorite', winback: 'replay', special: 'auto_awesome', referral: 'group_add' };
-            const types = [...new Set(allCoupons.map(c => c.type))];
-            const typeStats = types.map(type => {
-              const ofType = allCoupons.filter(c => c.type === type);
-              const usedOfType = ofType.filter(c => c.isUsed).length;
-              return {
-                type,
-                label: typeLabels[type] || type,
-                color: typeColors[type] || '#94a3b8',
-                icon: typeIcons[type] || 'confirmation_number',
-                total: ofType.length,
-                used: usedOfType,
-                rate: ofType.length > 0 ? Math.round((usedOfType / ofType.length) * 100) : 0,
-              };
-            }).sort((a, b) => b.total - a.total);
 
-            // 최근 사용 내역
-            const recentUsed = allCoupons
-              .filter(c => c.isUsed && c.usedAt)
-              .sort((a, b) => (b.usedAt || '').localeCompare(a.usedAt || ''))
-              .slice(0, 4);
+            if (allCoupons.length === 0) return null;
 
-            if (total === 0) return null;
+            // ── 이번달 / 이번주 기간 계산 ──
+            const thisYM = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+            const mStart = `${today.getMonth() + 1}.1`;
+            const mEnd = `${today.getMonth() + 1}.${today.getDate()}`;
+            const dayOfWeek = today.getDay() || 7;
+            const wMonday = new Date(today); wMonday.setDate(today.getDate() - dayOfWeek + 1);
+            const wSunday = new Date(wMonday); wSunday.setDate(wMonday.getDate() + 6);
+            const wStart = `${wMonday.getMonth() + 1}.${wMonday.getDate()}`;
+            const wEnd = `${wSunday.getMonth() + 1}.${wSunday.getDate()}`;
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) { const d = new Date(wMonday); d.setDate(wMonday.getDate() + i); weekDates.push(d.toISOString().slice(0, 10)); }
 
-            const maxTypeTotal = Math.max(...typeStats.map(t => t.total), 1);
+            const monthCoupons = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(thisYM));
+            const weekCoupons = allCoupons.filter(c => c.createdAt && weekDates.includes(c.createdAt));
+
+            const calcStats = (list) => ({
+              total: list.length,
+              used: list.filter(c => c.isUsed).length,
+              expired: list.filter(c => !c.isUsed && c.expiryDate < todayStr).length,
+              active: list.filter(c => !c.isUsed && c.expiryDate >= todayStr).length,
+              rate: list.length > 0 ? Math.round((list.filter(c => c.isUsed).length / list.length) * 100) : 0,
+            });
+            const mStats = calcStats(monthCoupons);
+            const wStats = calcStats(weekCoupons);
+
+            // ── 최근 3개월 쿠폰별 가로 막대 ──
+            const months3 = [];
+            for (let i = 0; i < 3; i++) {
+              const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+              const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+              months3.push({ ym, label: `${d.getMonth() + 1}월` });
+            }
+            const month3Data = months3.map(m => {
+              const mc = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(m.ym));
+              const types = [...new Set(mc.map(c => c.type))];
+              const byType = types.map(type => {
+                const ofType = mc.filter(c => c.type === type);
+                return { type, total: ofType.length, used: ofType.filter(c => c.isUsed).length };
+              }).sort((a, b) => b.total - a.total);
+              return { ...m, byType, total: mc.length, used: mc.filter(c => c.isUsed).length };
+            });
+            const maxBar = Math.max(...month3Data.flatMap(m => m.byType.map(t => t.total)), 1);
+
+            // ── AI 평가 생성 ──
+            const monthRates = month3Data.map(m => ({ label: m.label, rate: m.total > 0 ? Math.round((m.used / m.total) * 100) : 0, total: m.total }));
+            const bestMonth = [...monthRates].sort((a, b) => b.rate - a.rate)[0];
+            const thisMonthRate = monthRates[0];
+            const lastMonthRate = monthRates[1];
+
+            // 시즌 이벤트 감지
+            const monthNum = today.getMonth() + 1;
+            const seasonEvents = {
+              1: '새해 프로모션', 2: '발렌타인데이', 3: '화이트데이',
+              4: '봄시즌', 5: '가정의 달', 6: '여름 준비 시즌',
+              7: '여름 바캉스', 8: '휴가 시즌', 9: '가을 시즌',
+              10: '할로윈', 11: '블프 시즌', 12: '크리스마스/연말'
+            };
+            const topType = month3Data[0]?.byType[0];
+
+            let evalIcon = 'insights';
+            let evalColor = '#8b5cf6';
+            let evalTitle = '';
+            let evalDesc = '';
+
+            if (thisMonthRate.rate >= (lastMonthRate?.rate || 0) && thisMonthRate.rate > 0) {
+              evalIcon = 'trending_up';
+              evalColor = '#10b981';
+              evalTitle = `${thisMonthRate.label} 쿠폰 사용률 ${thisMonthRate.rate}% — ${bestMonth.label === thisMonthRate.label ? '최고치!' : '상승세!'}`;
+              evalDesc = `${seasonEvents[monthNum]} 효과로 쿠폰 반응이 좋아요.${topType ? ` ${typeLabels[topType.type] || topType.type} 쿠폰이 ${topType.used}/${topType.total}건 사용으로 가장 반응이 좋습니다.` : ''} 이 흐름을 유지하며 타겟 쿠폰을 더 적극 활용해보세요.`;
+            } else if (thisMonthRate.rate < (lastMonthRate?.rate || 0)) {
+              evalIcon = 'trending_down';
+              evalColor = '#f59e0b';
+              evalTitle = `${thisMonthRate.label} 사용률 ${thisMonthRate.rate}% — 지난달 대비 하락`;
+              evalDesc = `지난달(${lastMonthRate.rate}%) 대비 떨어졌어요. 유효기간을 짧게 설정하거나 문자 알림을 보내면 사용률을 올릴 수 있어요.${topType ? ` ${typeLabels[topType.type] || topType.type} 쿠폰에 집중해보세요.` : ''}`;
+            } else {
+              evalTitle = '쿠폰 데이터가 쌓이고 있어요';
+              evalDesc = '다음달이면 더 정확한 트렌드 분석이 가능해요. 다양한 타입의 쿠폰을 발행해서 고객 반응을 테스트해보세요.';
+            }
 
             return (
               <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
@@ -1109,122 +1159,114 @@ export default function AdminDashboardPage() {
                     <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
                     <h2 className="text-base font-bold">Coupon Analysis</h2>
                   </div>
-                  <button
-                    onClick={() => navigate('/admin/coupons')}
-                    className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5"
-                  >
+                  <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
                     쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </button>
                 </div>
 
-                {/* Summary Cards */}
-                <div className="grid grid-cols-4 gap-2 mb-5">
+                {/* ── 이번달 / 이번주 요약 ── */}
+                <div className="grid grid-cols-2 gap-3 mb-5">
                   {[
-                    { label: 'Total', value: total, color: '#64748b', icon: 'inventory_2' },
-                    { label: 'Used', value: used, color: '#10b981', icon: 'check_circle' },
-                    { label: 'Active', value: active, color: '#3b82f6', icon: 'hourglass_top' },
-                    { label: 'Expired', value: expired, color: '#ef4444', icon: 'timer_off' },
+                    { title: 'This Month', period: `${mStart} ~ ${mEnd}`, ...mStats, icon: 'calendar_month', accent: '#8b5cf6' },
+                    { title: 'This Week', period: `${wStart} ~ ${wEnd}`, ...wStats, icon: 'date_range', accent: '#3b82f6' },
                   ].map((s, i) => (
-                    <div key={i} className="text-center p-3 rounded-xl bg-slate-50 border border-slate-100">
-                      <span className="material-symbols-outlined text-base mb-1 block" style={{ color: s.color }}>{s.icon}</span>
-                      <p className="text-lg font-extrabold text-slate-800">{s.value}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{s.label}</p>
+                    <div key={i} className="p-4 rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white">
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <span className="material-symbols-outlined text-sm" style={{ color: s.accent }}>{s.icon}</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{s.title}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-300 mb-2">{s.period}</p>
+                      <div className="flex items-baseline gap-1 mb-3">
+                        <span className="text-2xl font-extrabold text-slate-800">{s.total}</span>
+                        <span className="text-[11px] text-slate-400">발행</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {[
+                          { label: '사용됨', value: s.used, color: '#10b981', icon: 'check_circle' },
+                          { label: '진행중', value: s.active, color: '#3b82f6', icon: 'hourglass_top' },
+                          { label: '만료', value: s.expired, color: '#ef4444', icon: 'timer_off' },
+                        ].map((row, ri) => (
+                          <div key={ri} className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-xs" style={{ color: row.color }}>{row.icon}</span>
+                            <span className="text-[11px] text-slate-500 flex-1">{row.label}</span>
+                            <span className="text-[12px] font-bold text-slate-700">{row.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                      {/* 사용률 바 */}
+                      <div className="mt-3 pt-2 border-t border-slate-50">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] text-slate-400">사용률</span>
+                          <span className="text-[11px] font-extrabold" style={{ color: s.rate >= 50 ? '#10b981' : s.rate >= 25 ? '#f59e0b' : '#94a3b8' }}>{s.rate}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${s.rate}%`, backgroundColor: s.rate >= 50 ? '#10b981' : s.rate >= 25 ? '#f59e0b' : '#94a3b8' }} />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* Use Rate Ring */}
-                <div className="flex items-center gap-5 mb-5 p-4 rounded-xl bg-gradient-to-r from-violet-50 to-white border border-violet-100/50">
-                  <div className="relative w-16 h-16 shrink-0">
-                    <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                      <circle cx="18" cy="18" r="14" fill="none" stroke="#e2e8f0" strokeWidth="3" />
-                      <circle cx="18" cy="18" r="14" fill="none" stroke="#8b5cf6" strokeWidth="3"
-                        strokeDasharray={`${useRate * 0.88} ${88 - useRate * 0.88}`} strokeLinecap="round" />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-sm font-extrabold text-violet-600">{useRate}%</span>
-                    </div>
+                {/* ── 3개월 쿠폰별 가로 막대그래프 ── */}
+                <div className="mb-5">
+                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">3개월 쿠폰별 반응</p>
+                  <div className="space-y-4">
+                    {month3Data.map((m, mi) => (
+                      <div key={mi}>
+                        <div className="flex items-center gap-1.5 mb-2">
+                          <span className="text-[12px] font-extrabold text-slate-700">{m.label}</span>
+                          <span className="text-[10px] text-slate-300">{m.total}건</span>
+                          {mi === 0 && <span className="text-[8px] font-bold text-white bg-accent px-1.5 py-0.5 rounded-full ml-0.5">NOW</span>}
+                          <span className="text-[10px] font-bold ml-auto" style={{ color: m.total > 0 && m.used / m.total >= 0.5 ? '#10b981' : '#94a3b8' }}>
+                            {m.total > 0 ? Math.round((m.used / m.total) * 100) : 0}%
+                          </span>
+                        </div>
+                        <div className="space-y-1.5">
+                          {m.byType.map((t) => {
+                            const barW = maxBar > 0 ? Math.max((t.total / maxBar) * 100, t.total > 0 ? 8 : 0) : 0;
+                            const usedW = t.total > 0 ? (t.used / t.total) * 100 : 0;
+                            const color = typeColors[t.type] || '#94a3b8';
+                            return (
+                              <div key={t.type} className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ backgroundColor: color + '15' }}>
+                                  <span className="material-symbols-outlined text-xs" style={{ color }}>{typeIcons[t.type] || 'confirmation_number'}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="h-5 rounded-md overflow-hidden relative" style={{ width: `${barW}%`, backgroundColor: color + '15', minWidth: t.total > 0 ? 40 : 0 }}>
+                                    <div className="absolute inset-y-0 left-0 rounded-md" style={{ width: `${usedW}%`, backgroundColor: color }} />
+                                    <div className="absolute inset-0 flex items-center px-2">
+                                      <span className="text-[9px] font-bold" style={{ color: usedW > 50 ? 'white' : color }}>{t.used}/{t.total}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] text-slate-400 w-8 text-right shrink-0">{typeLabels[t.type]?.slice(0, 3)}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {mi < month3Data.length - 1 && <div className="border-t border-slate-50 mt-3" />}
+                      </div>
+                    ))}
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-slate-800">전체 사용률</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">발행 {total}건 중 {used}건 사용됨</p>
-                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
-                      {useRate >= 60 ? '쿠폰 반응이 좋아요! 타겟 쿠폰을 더 적극 활용해보세요.' :
-                       useRate >= 30 ? '보통 수준이에요. 유효기간을 짧게 하면 사용률이 올라갈 수 있어요.' :
-                       '사용률이 낮아요. 쿠폰 금액을 높이거나 문자 알림을 보내보세요.'}
-                    </p>
+                  {/* 범례 */}
+                  <div className="flex justify-center gap-3 mt-3 pt-3 border-t border-slate-50">
+                    <div className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-violet-500" /><span className="text-[9px] text-slate-400">사용됨</span></div>
+                    <div className="flex items-center gap-1"><div className="w-3 h-2 rounded-sm bg-violet-500/20" /><span className="text-[9px] text-slate-400">발행됨</span></div>
                   </div>
                 </div>
 
-                {/* 월별 타입별 세로 막대그래프 (최근 3개월) */}
-                {(() => {
-                  const months = [];
-                  for (let i = 0; i < 3; i++) {
-                    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-                    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                    const label = `${d.getMonth() + 1}월`;
-                    months.push({ ym, label });
-                  }
-                  const allTypes = ['birthday', 'loyalty', 'winback', 'special'];
-                  // 월별 타입별 발행/사용 집계
-                  const monthData = months.map(m => {
-                    const mCoupons = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(m.ym));
-                    const byType = allTypes.map(type => {
-                      const ofType = mCoupons.filter(c => c.type === type);
-                      const usedOfType = ofType.filter(c => c.isUsed).length;
-                      return { type, total: ofType.length, used: usedOfType };
-                    });
-                    return { ...m, byType, total: mCoupons.length, used: mCoupons.filter(c => c.isUsed).length };
-                  });
-                  const maxBar = Math.max(...monthData.flatMap(m => m.byType.map(t => t.total)), 1);
-                  const barH = 100;
-
-                  return (
-                    <div>
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">월별 타입 반응</p>
-                      <div className="flex gap-4 lg:gap-6">
-                        {monthData.map((m, mi) => (
-                          <div key={mi} className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1 mb-2">
-                              <span className="text-[12px] font-extrabold text-slate-700">{m.label}</span>
-                              {mi === 0 && <span className="text-[8px] font-bold text-white bg-accent px-1 py-0.5 rounded-full">NOW</span>}
-                            </div>
-                            {/* 세로 막대들 */}
-                            <div className="flex items-end gap-1.5 justify-center" style={{ height: barH }}>
-                              {m.byType.map((t) => {
-                                const h = maxBar > 0 ? Math.max((t.total / maxBar) * barH, t.total > 0 ? 8 : 0) : 0;
-                                const usedH = t.total > 0 ? (t.used / t.total) * h : 0;
-                                return (
-                                  <div key={t.type} className="flex flex-col items-center gap-0.5 flex-1">
-                                    {t.total > 0 && <span className="text-[9px] font-bold text-slate-400">{t.total}</span>}
-                                    <div className="w-full max-w-[24px] rounded-t-md overflow-hidden relative" style={{ height: h, backgroundColor: (typeColors[t.type] || '#94a3b8') + '20' }}>
-                                      <div className="absolute bottom-0 left-0 right-0 rounded-t-md" style={{ height: usedH, backgroundColor: typeColors[t.type] || '#94a3b8' }} />
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            {/* 사용률 */}
-                            <div className="text-center mt-1.5">
-                              <span className="text-[10px] font-bold" style={{ color: m.total > 0 && m.used / m.total >= 0.5 ? '#10b981' : '#94a3b8' }}>
-                                {m.total > 0 ? Math.round((m.used / m.total) * 100) : 0}%
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {/* 범례 */}
-                      <div className="flex justify-center gap-3 mt-3 pt-3 border-t border-slate-50">
-                        {allTypes.map(type => (
-                          <div key={type} className="flex items-center gap-1">
-                            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: typeColors[type] }} />
-                            <span className="text-[9px] text-slate-400 font-medium">{typeLabels[type]}</span>
-                          </div>
-                        ))}
-                      </div>
+                {/* ── AI 평가 ── */}
+                <div className="p-4 rounded-xl border border-slate-100 bg-gradient-to-r from-violet-50/50 via-white to-emerald-50/30">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: evalColor + '15' }}>
+                      <span className="material-symbols-outlined text-base" style={{ color: evalColor }}>{evalIcon}</span>
                     </div>
-                  );
-                })()}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-slate-800 mb-1">{evalTitle}</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">{evalDesc}</p>
+                    </div>
+                  </div>
+                </div>
               </section>
             );
           })()}
