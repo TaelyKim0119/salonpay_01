@@ -428,6 +428,7 @@ export default function CustomerDashboardPage() {
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   const [selectedDot, setSelectedDot] = useState(null); // { visit, month }
   const [qrCoupon, setQrCoupon] = useState(null);
+  const [selectedStar, setSelectedStar] = useState(null); // 닮은 스타 상세
 
   useEffect(() => {
     if (!currentCustomer) {
@@ -803,6 +804,164 @@ export default function CustomerDashboardPage() {
               )}
 
 
+
+              {/* ── 총 할인 혜택 ── */}
+              {allVisits.length > 0 && (() => {
+                const totalDiscount = allVisits.reduce((s, v) => s + (v.discount || 0), 0);
+                const totalPointsUsed = allVisits.reduce((s, v) => s + (v.pointsUsed || 0), 0);
+                const totalSaved = totalDiscount + totalPointsUsed;
+                const usedCoupons = coupons.filter(c => c.isUsed).length;
+                if (totalSaved === 0 && usedCoupons === 0) return null;
+                return (
+                  <section className="px-6 lg:px-8 pt-4 pb-2">
+                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-5 shadow-lg shadow-emerald-500/20 relative overflow-hidden">
+                      <div className="absolute top-[-10%] right-[-5%] opacity-15 pointer-events-none">
+                        <span className="material-symbols-outlined text-white text-[100px]">savings</span>
+                      </div>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="material-symbols-outlined text-white/90 text-lg">local_offer</span>
+                          <span className="text-white/80 text-xs font-bold uppercase tracking-wider">My Savings</span>
+                        </div>
+                        <p className="text-white text-3xl font-extrabold mb-1">
+                          {formatNumber(totalSaved)}<span className="text-lg font-normal opacity-80">{t('won')}</span>
+                        </p>
+                        <p className="text-white/60 text-xs mb-4">총 할인 + 포인트 사용 혜택</p>
+                        <div className="flex gap-4">
+                          <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
+                            <p className="text-white/60 text-[10px] font-semibold mb-1">쿠폰 할인</p>
+                            <p className="text-white text-lg font-extrabold">{formatNumber(totalDiscount)}<span className="text-xs opacity-70">{t('won')}</span></p>
+                          </div>
+                          <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
+                            <p className="text-white/60 text-[10px] font-semibold mb-1">포인트 사용</p>
+                            <p className="text-white text-lg font-extrabold">{formatNumber(totalPointsUsed)}<span className="text-xs opacity-70">P</span></p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+              {/* ── 나와 닮은 스타 헤어 ── */}
+              {(() => {
+                const STAR_DATA = [
+                  {
+                    id: 'cat',
+                    faceType: '고양이상',
+                    name: '한소희',
+                    emoji: '🐱',
+                    photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&q=80',
+                    styles: [
+                      { name: '레이어드 롱헤어', img: 'https://images.unsplash.com/photo-1605980776566-0486c3ac7617?w=400&q=80', desc: '시크한 분위기의 긴 레이어드' },
+                      { name: '숏컷 보브', img: 'https://images.unsplash.com/photo-1595959183082-7b570b7e1e6b?w=400&q=80', desc: '턱선 보브로 도도한 매력' },
+                      { name: '웨이브 펌', img: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400&q=80', desc: '내추럴 웨이브로 부드러운 이미지' },
+                      { name: '다크 브라운 염색', img: 'https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400&q=80', desc: '깊이감 있는 다크톤 컬러' },
+                    ],
+                  },
+                  {
+                    id: 'dog',
+                    faceType: '강아지상',
+                    name: '수지',
+                    emoji: '🐶',
+                    photo: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&q=80',
+                    styles: [
+                      { name: 'C컬 펌', img: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400&q=80', desc: '사랑스러운 안쪽 C컬' },
+                      { name: '앞머리 + 긴 생머리', img: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&q=80', desc: '청순한 앞머리 스타일' },
+                      { name: '허쉬컷', img: 'https://images.unsplash.com/photo-1554519515-242161756769?w=400&q=80', desc: '볼륨감 있는 허쉬컷' },
+                      { name: '애쉬 브라운', img: 'https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=400&q=80', desc: '따뜻한 애쉬 브라운 톤' },
+                    ],
+                  },
+                  {
+                    id: 'turtle',
+                    faceType: '꼬북이상',
+                    name: '신세경',
+                    emoji: '🐢',
+                    photo: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
+                    styles: [
+                      { name: '단발 보브', img: 'https://images.unsplash.com/photo-1620122303020-87ec826cf70c?w=400&q=80', desc: '깔끔한 단발로 귀여운 매력' },
+                      { name: '히피 펌', img: 'https://images.unsplash.com/photo-1596178060671-7a80dc8059ea?w=400&q=80', desc: '풍성한 히피 펌 스타일' },
+                      { name: '투톤 하이라이트', img: 'https://images.unsplash.com/photo-1605980776566-0486c3ac7617?w=400&q=80', desc: '포인트 하이라이트로 세련되게' },
+                      { name: '묶음머리 + 앞머리', img: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&q=80', desc: '데일리 묶음머리 스타일링' },
+                    ],
+                  },
+                ];
+
+                return (
+                  <section className="px-6 lg:px-8 pt-6 pb-2">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="material-symbols-outlined text-pink-500 text-lg">stars</span>
+                      <h3 className="text-slate-900 text-base font-bold">나와 닮은 스타 헤어</h3>
+                    </div>
+                    <p className="text-xs text-slate-400 mb-4">관상 타입별 연예인 헤어스타일을 참고해보세요</p>
+
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                      {STAR_DATA.map(star => (
+                        <button key={star.id} onClick={() => setSelectedStar(star)}
+                          className="shrink-0 w-[140px] rounded-2xl overflow-hidden border border-slate-100 bg-white shadow-sm hover:shadow-md active:scale-[0.97] transition-all text-left">
+                          <div className="h-[130px] relative overflow-hidden">
+                            <img src={star.photo} alt={star.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute bottom-2 left-2.5 right-2.5">
+                              <span className="text-[10px] text-white/70 font-medium">{star.emoji} {star.faceType}</span>
+                              <p className="text-sm font-bold text-white">{star.name}</p>
+                            </div>
+                          </div>
+                          <div className="px-3 py-2.5 flex items-center justify-between">
+                            <span className="text-[10px] text-slate-400">{star.styles.length} styles</span>
+                            <span className="material-symbols-outlined text-pink-400 text-sm">arrow_forward</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+                );
+              })()}
+
+              {/* 스타 헤어 상세 모달 */}
+              {selectedStar && (
+                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end lg:items-center justify-center" onClick={() => setSelectedStar(null)}>
+                  <div className="bg-white w-full lg:max-w-lg lg:rounded-2xl rounded-t-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    {/* 헤더 */}
+                    <div className="sticky top-0 bg-white z-10 px-5 pt-4 pb-3 border-b border-slate-100 rounded-t-2xl">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img src={selectedStar.photo} alt={selectedStar.name} className="w-10 h-10 rounded-full object-cover border-2 border-pink-200" />
+                          <div>
+                            <p className="text-sm font-bold text-slate-800">{selectedStar.emoji} {selectedStar.name} 스타일</p>
+                            <p className="text-[10px] text-slate-400">{selectedStar.faceType} · {selectedStar.styles.length} styles</p>
+                          </div>
+                        </div>
+                        <button onClick={() => setSelectedStar(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100">
+                          <span className="material-symbols-outlined text-slate-400">close</span>
+                        </button>
+                      </div>
+                    </div>
+                    {/* 스타일 그리드 */}
+                    <div className="p-4 grid grid-cols-2 gap-3">
+                      {selectedStar.styles.map((style, i) => (
+                        <div key={i} className="rounded-xl overflow-hidden border border-slate-100 bg-white shadow-sm">
+                          <div className="h-[160px] overflow-hidden">
+                            <img src={style.img} alt={style.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                          </div>
+                          <div className="p-3">
+                            <p className="text-[12px] font-bold text-slate-800 mb-0.5">{style.name}</p>
+                            <p className="text-[10px] text-slate-400 leading-relaxed">{style.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {/* 예약 버튼 */}
+                    <div className="p-4 pt-0">
+                      <button onClick={() => { setSelectedStar(null); navigate('/booking'); }}
+                        className="w-full py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        <span className="material-symbols-outlined text-lg">calendar_month</span>
+                        이 스타일로 예약하기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {allVisits.length === 0 && coupons.length === 0 && (
                 <section className="px-6 lg:px-8 py-8">
