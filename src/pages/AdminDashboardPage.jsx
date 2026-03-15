@@ -97,6 +97,7 @@ export default function AdminDashboardPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [chartPeriod, setChartPeriod] = useState('weekly');
   const [hoveredDot, setHoveredDot] = useState(null);
+  const [expandedChart, setExpandedChart] = useState(null); // 모바일 차트 확대 모달
 
   useEffect(() => {
     if (!currentSalon) {
@@ -411,19 +412,31 @@ export default function AdminDashboardPage() {
           })()}
 
           {/* Revenue Chart - full width */}
-          <section className="bg-white p-5 lg:p-8 rounded-xl shadow-sm border border-slate-100">
+          <section className={`bg-white rounded-xl shadow-sm border border-slate-100 transition-all ${expandedChart === 'revenue' ? 'lg:p-8 p-5 fixed inset-0 z-50 rounded-none border-none overflow-y-auto' : 'p-5 lg:p-8'}`}>
+              {expandedChart === 'revenue' && (
+                <button onClick={() => setExpandedChart(null)} className="lg:hidden flex items-center gap-2 mb-4 text-slate-500">
+                  <span className="material-symbols-outlined text-lg">close</span>
+                  <span className="text-sm font-semibold">닫기</span>
+                </button>
+              )}
               <div className="flex items-center justify-between mb-6 lg:mb-8">
                 <div>
                   <h2 className="text-base lg:text-lg font-bold">{chartPeriod === 'weekly' ? (t('weeklyVisitTrends') || 'Weekly Revenue') : (t('monthlyRevenue') || 'Monthly Revenue')}</h2>
                   <p className="text-xs lg:text-sm text-slate-500">{chartPeriod === 'weekly' ? (t('visitTrendsDesc') || 'Last 7 days revenue breakdown') : (t('monthlyRevenueDesc') || 'Last 12 months revenue breakdown')}</p>
                 </div>
-                <div className="flex bg-slate-100 rounded-lg p-0.5">
-                  {['weekly', 'monthly'].map(p => (
-                    <button key={p} onClick={() => setChartPeriod(p)}
-                      className={`text-[11px] font-semibold px-3 py-1 rounded-md transition-all ${chartPeriod === p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}>
-                      {p === 'weekly' ? '7 Days' : '12 Months'}
-                    </button>
-                  ))}
+                <div className="flex items-center gap-2">
+                  <div className="flex bg-slate-100 rounded-lg p-0.5">
+                    {['weekly', 'monthly'].map(p => (
+                      <button key={p} onClick={() => setChartPeriod(p)}
+                        className={`text-[11px] font-semibold px-3 py-1 rounded-md transition-all ${chartPeriod === p ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'}`}>
+                        {p === 'weekly' ? '7 Days' : '12 Months'}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={() => setExpandedChart(expandedChart === 'revenue' ? null : 'revenue')}
+                    className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
+                    <span className="material-symbols-outlined text-slate-500 text-[16px]">{expandedChart === 'revenue' ? 'close_fullscreen' : 'open_in_full'}</span>
+                  </button>
                 </div>
               </div>
               {(() => {
@@ -1179,15 +1192,27 @@ export default function AdminDashboardPage() {
             }
 
             return (
-              <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
+              <section className={`bg-white rounded-xl shadow-sm border border-slate-100 transition-all ${expandedChart === 'coupon' ? 'p-5 fixed inset-0 z-50 rounded-none border-none overflow-y-auto' : 'p-5 lg:p-6'}`}>
+                {expandedChart === 'coupon' && (
+                  <button onClick={() => setExpandedChart(null)} className="lg:hidden flex items-center gap-2 mb-4 text-slate-500">
+                    <span className="material-symbols-outlined text-lg">close</span>
+                    <span className="text-sm font-semibold">닫기</span>
+                  </button>
+                )}
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
                     <h2 className="text-base font-bold">Coupon Analysis</h2>
                   </div>
-                  <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
-                    쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
+                      쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
+                    </button>
+                    <button onClick={() => setExpandedChart(expandedChart === 'coupon' ? null : 'coupon')}
+                      className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
+                      <span className="material-symbols-outlined text-slate-500 text-[16px]">{expandedChart === 'coupon' ? 'close_fullscreen' : 'open_in_full'}</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* ── 전체 쿠폰 현황 도넛 차트 ── */}

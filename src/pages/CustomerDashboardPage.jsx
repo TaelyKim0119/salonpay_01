@@ -947,7 +947,6 @@ export default function CustomerDashboardPage() {
             { key: 'home', icon: 'home', label: t('home') || 'Home' },
             { key: 'history', icon: 'timeline', label: 'Journey' },
             { key: 'coupons', icon: 'confirmation_number', label: t('coupons') || 'Coupons' },
-            { key: 'profile', icon: 'person', label: t('profile') || 'Profile' },
           ].map((tab) => {
             const isActive = activeTab === tab.key;
             return (
