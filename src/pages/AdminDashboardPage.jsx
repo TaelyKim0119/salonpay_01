@@ -92,6 +92,7 @@ export default function AdminDashboardPage() {
   const [allVisits, setAllVisits] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [allCoupons, setAllCoupons] = useState([]);
+  const [couponSort, setCouponSort] = useState('rate'); // 'rate' | 'issued' | 'speed'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
   const [chartPeriod, setChartPeriod] = useState('weekly');
@@ -1098,30 +1099,43 @@ export default function AdminDashboardPage() {
             const mStats = calcStats(monthCoupons);
             const wStats = calcStats(weekCoupons);
 
-            // ── 최근 3개월 쿠폰 반응 시간 (사용까지 걸린 일수) ──
+            // ── 최근 3개월 쿠폰 종합 데이터 ──
             const months3 = [];
             for (let i = 0; i < 3; i++) {
               const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
               const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
               months3.push({ ym, label: `${d.getMonth() + 1}월` });
             }
-            // 사용된 쿠폰만 → 반응시간 계산
-            const usedCoupons3m = allCoupons.filter(c => c.isUsed && c.createdAt && c.usedAt && months3.some(m => c.createdAt.startsWith(m.ym)));
-            const responseByType = {};
-            usedCoupons3m.forEach(c => {
-              const days = Math.max(0, Math.round((new Date(c.usedAt) - new Date(c.createdAt)) / 86400000));
-              if (!responseByType[c.type]) responseByType[c.type] = [];
-              responseByType[c.type].push(days);
+            const coupons3m = allCoupons.filter(c => c.createdAt && months3.some(m => c.createdAt.startsWith(m.ym)));
+            // 타입별 종합: 발행수, 사용수, 사용률, 반응시간
+            const typeStatsMap = {};
+            coupons3m.forEach(c => {
+              if (!typeStatsMap[c.type]) typeStatsMap[c.type] = { issued: 0, used: 0, days: [] };
+              typeStatsMap[c.type].issued++;
+              if (c.isUsed && c.usedAt) {
+                typeStatsMap[c.type].used++;
+                typeStatsMap[c.type].days.push(Math.max(0, Math.round((new Date(c.usedAt) - new Date(c.createdAt)) / 86400000)));
+              }
             });
-            const responseData = Object.entries(responseByType).map(([type, days]) => ({
+            const responseData = Object.entries(typeStatsMap).map(([type, s]) => ({
               type,
-              avg: Math.round(days.reduce((a, b) => a + b, 0) / days.length),
-              min: Math.min(...days),
-              max: Math.max(...days),
-              count: days.length,
-              days,
-            })).sort((a, b) => a.avg - b.avg);
-            const maxDays = Math.max(...responseData.map(r => r.max), 1);
+              issued: s.issued,
+              used: s.used,
+              rate: s.issued > 0 ? Math.round((s.used / s.issued) * 100) : 0,
+              avg: s.days.length > 0 ? Math.round(s.days.reduce((a, b) => a + b, 0) / s.days.length) : null,
+              min: s.days.length > 0 ? Math.min(...s.days) : null,
+              max: s.days.length > 0 ? Math.max(...s.days) : null,
+              count: s.days.length,
+              days: s.days,
+            }));
+            // 정렬
+            const sortedData = [...responseData].sort((a, b) => {
+              if (couponSort === 'rate') return b.rate - a.rate;
+              if (couponSort === 'issued') return b.issued - a.issued;
+              return (a.avg || 999) - (b.avg || 999); // speed: 빠른 순
+            });
+            const maxDays = Math.max(...responseData.filter(r => r.max !== null).map(r => r.max), 1);
+            const bestPerformer = [...responseData].sort((a, b) => b.rate - a.rate)[0];
             // month3Data for AI eval
             const month3Data = months3.map(m => {
               const mc = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(m.ym));
@@ -1219,67 +1233,98 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
 
-                {/* ── 쿠폰 반응 속도 (사용까지 걸린 일수) ── */}
+                {/* ── Best Performer 하이라이트 ── */}
+                {bestPerformer && bestPerformer.rate > 0 && (
+                  <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-emerald-500 text-base">emoji_events</span>
+                      <span className="text-[12px] font-extrabold text-emerald-700">
+                        {typeLabels[bestPerformer.type]} 쿠폰: {bestPerformer.rate}% 전환{bestPerformer.rate === 100 ? ' 완료' : ''}
+                      </span>
+                      {bestPerformer.avg !== null && (
+                        <span className="text-[10px] text-emerald-500 ml-auto">평균 {bestPerformer.avg}일 반응</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── 쿠폰 타입별 분석 ── */}
                 <div className="mb-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">쿠폰 반응 속도</p>
-                    <span className="text-[9px] text-slate-300">최근 3개월 · 사용 완료 기준</span>
+                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">쿠폰 타입별 분석</p>
+                    <div className="flex gap-1">
+                      {[
+                        { key: 'rate', label: '사용률순', icon: 'percent' },
+                        { key: 'issued', label: '발행순', icon: 'sort' },
+                        { key: 'speed', label: '반응순', icon: 'speed' },
+                      ].map(f => (
+                        <button key={f.key} onClick={() => setCouponSort(f.key)}
+                          className={`text-[9px] px-2 py-1 rounded-md font-semibold flex items-center gap-0.5 transition-all ${couponSort === f.key ? 'bg-violet-500 text-white shadow-sm' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
+                          <span className="material-symbols-outlined" style={{ fontSize: 11 }}>{f.icon}</span>
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  {responseData.length === 0 ? (
-                    <p className="text-[11px] text-slate-400 text-center py-4">아직 사용된 쿠폰이 없어요</p>
+                  {sortedData.length === 0 ? (
+                    <p className="text-[11px] text-slate-400 text-center py-4">쿠폰 데이터가 없어요</p>
                   ) : (
                     <div className="space-y-3">
-                      {responseData.map((r) => {
+                      {sortedData.map((r, ri) => {
                         const color = typeColors[r.type] || '#94a3b8';
-                        const speedColor = r.avg <= 5 ? '#10b981' : r.avg <= 14 ? '#f59e0b' : '#ef4444';
-                        const speedLabel = r.avg <= 5 ? '빠른 반응' : r.avg <= 14 ? '보통' : '느린 반응';
-                        const barW = Math.max((r.avg / maxDays) * 100, 12);
+                        const rateColor = r.rate >= 80 ? '#10b981' : r.rate >= 50 ? '#3b82f6' : r.rate >= 25 ? '#f59e0b' : '#94a3b8';
+                        const speedColor = r.avg !== null ? (r.avg <= 5 ? '#10b981' : r.avg <= 14 ? '#f59e0b' : '#ef4444') : '#94a3b8';
+                        const barW = r.issued > 0 ? Math.max(r.rate, 4) : 0;
                         return (
-                          <div key={r.type} className="group">
-                            <div className="flex items-center gap-2 mb-1.5">
+                          <div key={r.type} className="p-3 rounded-xl border border-slate-50 bg-gradient-to-br from-white to-slate-50/50 hover:border-slate-200 transition-all">
+                            {/* 헤더: 아이콘 + 이름 + 사용률 */}
+                            <div className="flex items-center gap-2 mb-2">
                               <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + '15' }}>
                                 <span className="material-symbols-outlined text-sm" style={{ color }}>{typeIcons[r.type] || 'confirmation_number'}</span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[12px] font-bold text-slate-700">{typeLabels[r.type] || r.type}</span>
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ backgroundColor: speedColor + '15', color: speedColor }}>{speedLabel}</span>
+                                <span className="text-[12px] font-bold text-slate-700">{typeLabels[r.type] || r.type}</span>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-[10px] text-slate-400">{r.issued}건 발행 · {r.used}건 사용</span>
+                                  {r.avg !== null && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ backgroundColor: speedColor + '15', color: speedColor }}>
+                                      ~{r.avg}일
+                                    </span>
+                                  )}
                                 </div>
-                                <span className="text-[10px] text-slate-400">{r.count}건 사용</span>
                               </div>
                               <div className="text-right shrink-0">
-                                <span className="text-lg font-extrabold" style={{ color: speedColor }}>{r.avg}</span>
-                                <span className="text-[10px] text-slate-400 ml-0.5">일</span>
+                                <span className="text-xl font-extrabold" style={{ color: rateColor }}>{r.rate}</span>
+                                <span className="text-[11px] font-bold" style={{ color: rateColor }}>%</span>
                               </div>
                             </div>
-                            {/* 바 + 개별 포인트 */}
-                            <div className="ml-9 relative">
-                              <div className="h-6 bg-slate-50 rounded-lg overflow-hidden relative">
-                                <div className="absolute inset-y-0 left-0 rounded-lg transition-all" style={{ width: `${barW}%`, background: `linear-gradient(90deg, ${color}40, ${color})` }} />
-                                {/* 개별 사용 일수 점 표시 */}
-                                {r.days.map((d, di) => (
-                                  <div key={di} className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full border border-white shadow-sm" style={{ left: `${Math.max((d / maxDays) * 100, 2)}%`, backgroundColor: color }} />
+                            {/* 사용률 바 + 퍼센트 표시 */}
+                            <div className="relative">
+                              <div className="h-5 bg-slate-100 rounded-lg overflow-hidden relative">
+                                <div className="absolute inset-y-0 left-0 rounded-lg transition-all" style={{ width: `${barW}%`, background: `linear-gradient(90deg, ${color}60, ${color})` }} />
+                                {r.count > 0 && r.days.map((d, di) => (
+                                  <div key={di} className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-white" style={{ left: `${Math.min(Math.max((d / maxDays) * 60 + 40, 2), 98)}%`, backgroundColor: color, opacity: 0.7 }} />
                                 ))}
-                                <div className="absolute inset-0 flex items-center px-2.5">
-                                  <span className="text-[9px] font-bold text-white drop-shadow-sm">평균 {r.avg}일</span>
-                                </div>
+                                {r.used > 0 && (
+                                  <div className="absolute inset-0 flex items-center px-2">
+                                    <span className="text-[9px] font-bold" style={{ color: barW > 40 ? 'white' : color }}>{r.used}/{r.issued}</span>
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex justify-between mt-1">
-                                <span className="text-[9px] text-slate-300">최소 {r.min}일</span>
-                                <span className="text-[9px] text-slate-300">최대 {r.max}일</span>
-                              </div>
+                              {/* 막대 끝에 퍼센트 */}
+                              <span className="absolute right-0 -top-0.5 text-[10px] font-extrabold" style={{ color: rateColor }}>{r.rate}%</span>
                             </div>
+                            {r.avg !== null && (
+                              <div className="flex justify-between mt-1.5">
+                                <span className="text-[9px] text-slate-300">반응: 최소 {r.min}일 · 최대 {r.max}일</span>
+                                <span className="text-[9px] font-semibold" style={{ color: speedColor }}>평균 {r.avg}일</span>
+                              </div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                   )}
-                  {/* 범례 */}
-                  <div className="flex justify-center gap-4 mt-3 pt-3 border-t border-slate-50">
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500" /><span className="text-[9px] text-slate-400">~5일</span></div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-amber-500" /><span className="text-[9px] text-slate-400">6~14일</span></div>
-                    <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-red-500" /><span className="text-[9px] text-slate-400">15일+</span></div>
-                  </div>
                 </div>
 
                 {/* ── AI 평가 ── */}
