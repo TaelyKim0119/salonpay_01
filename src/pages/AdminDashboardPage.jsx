@@ -99,6 +99,10 @@ export default function AdminDashboardPage() {
   const [chartPeriod, setChartPeriod] = useState('weekly');
   const [hoveredDot, setHoveredDot] = useState(null);
   const [expandedChart, setExpandedChart] = useState(null); // 모바일 차트 확대 모달
+  const [showCashSettings, setShowCashSettings] = useState(false);
+  const [cashDiscountRate, setCashDiscountRate] = useState(10);
+  const [pointEarnRate, setPointEarnRate] = useState(5);
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
   useEffect(() => {
     if (!currentSalon) {
@@ -156,6 +160,13 @@ export default function AdminDashboardPage() {
         totalRevenue: dashStats.totalRevenue || 0,
         monthlyVisits: dashStats.monthlyVisits || 0
       });
+
+      // 설정 로드
+      const settings = await sheetsDB.getSettings();
+      setCashDiscountRate(settings.cashDiscountRate ?? settings.CASH_DISCOUNT_RATE ?? 10);
+      setPointEarnRate(settings.pointEarnRate ?? settings.POINT_EARN_RATE ?? 5);
+      setSettingsLoaded(true);
+
       hideLoading();
     } catch (err) {
       hideLoading();
@@ -1805,6 +1816,19 @@ export default function AdminDashboardPage() {
                   <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
                 </button>
                 <button
+                  onClick={() => { setShowSettings(false); setShowCashSettings(true); }}
+                  className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <span className="material-symbols-outlined text-emerald-500">payments</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-slate-900">현금 할인 / 포인트 설정</p>
+                    <p className="text-xs text-slate-500">현금 할인율 {cashDiscountRate}% · 포인트 적립 {pointEarnRate}%</p>
+                  </div>
+                  <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
+                </button>
+                <button
                   onClick={() => { setShowSettings(false); navigate('/admin/ai-analysis'); }}
                   className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
                 >
@@ -1830,6 +1854,121 @@ export default function AdminDashboardPage() {
                   </div>
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* 현금 할인 / 포인트 설정 모달 */}
+        {showCashSettings && (
+          <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center" onClick={() => setShowCashSettings(false)}>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+            <div
+              className="relative w-full max-w-md bg-white rounded-t-3xl lg:rounded-3xl p-6 pb-10 lg:pb-6"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-5 lg:hidden" />
+              <button onClick={() => setShowCashSettings(false)} className="absolute top-4 right-4 size-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <span className="material-symbols-outlined text-slate-500 text-lg">close</span>
+              </button>
+
+              <div className="flex items-center gap-3 mb-6">
+                <div className="size-11 rounded-xl bg-emerald-100 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-emerald-600 text-2xl">payments</span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">현금 할인 / 포인트 설정</h3>
+                  <p className="text-xs text-slate-400">현금 결제 시 할인율과 포인트 적립률을 조정하세요</p>
+                </div>
+              </div>
+
+              {/* 현금 할인율 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-bold text-slate-700">현금 결제 할인율</label>
+                  <span className="text-2xl font-black text-emerald-600">{cashDiscountRate}%</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mb-3">현금으로 결제하면 이 비율만큼 할인됩니다</p>
+                <input
+                  type="range"
+                  min="0" max="20" step="1"
+                  value={cashDiscountRate}
+                  onChange={e => setCashDiscountRate(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-emerald-500"
+                />
+                <div className="flex justify-between text-[10px] text-slate-300 mt-1">
+                  <span>0%</span><span>5%</span><span>10%</span><span>15%</span><span>20%</span>
+                </div>
+                {/* 예시 */}
+                <div className="mt-3 bg-emerald-50 rounded-xl p-3 border border-emerald-100">
+                  <p className="text-[11px] text-slate-500">
+                    예) 시술비 <span className="font-bold text-slate-800">100,000원</span> →
+                    현금 결제 시 <span className="font-bold text-emerald-600">{formatNumber(100000 - 100000 * cashDiscountRate / 100)}원</span>
+                    <span className="text-emerald-500"> ({formatNumber(100000 * cashDiscountRate / 100)}원 할인)</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* 포인트 적립률 */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-bold text-slate-700">포인트 적립률</label>
+                  <span className="text-2xl font-black text-violet-600">{pointEarnRate}%</span>
+                </div>
+                <p className="text-[11px] text-slate-400 mb-3">결제 금액의 이 비율만큼 포인트가 적립됩니다</p>
+                <input
+                  type="range"
+                  min="1" max="15" step="1"
+                  value={pointEarnRate}
+                  onChange={e => setPointEarnRate(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-100 rounded-full appearance-none cursor-pointer accent-violet-500"
+                />
+                <div className="flex justify-between text-[10px] text-slate-300 mt-1">
+                  <span>1%</span><span>5%</span><span>10%</span><span>15%</span>
+                </div>
+                <div className="mt-3 bg-violet-50 rounded-xl p-3 border border-violet-100">
+                  <p className="text-[11px] text-slate-500">
+                    예) 결제 금액 <span className="font-bold text-slate-800">100,000원</span> →
+                    <span className="font-bold text-violet-600"> +{formatNumber(100000 * pointEarnRate / 100)}P</span> 적립
+                  </p>
+                </div>
+              </div>
+
+              {/* 현금+포인트 시뮬레이션 */}
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-5">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">시뮬레이션: 100,000원 현금 결제</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <p className="text-[11px] text-slate-500">고객 실제 결제</p>
+                    <p className="text-lg font-black text-slate-900">{formatNumber(100000 - 100000 * cashDiscountRate / 100)}원</p>
+                  </div>
+                  <div className="text-slate-300">+</div>
+                  <div className="flex-1">
+                    <p className="text-[11px] text-slate-500">포인트 적립</p>
+                    <p className="text-lg font-black text-violet-600">{formatNumber(Math.round((100000 - 100000 * cashDiscountRate / 100) * pointEarnRate / 100))}P</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 저장 버튼 */}
+              <button
+                onClick={async () => {
+                  try {
+                    await sheetsDB.saveSettings({
+                      pointEarnRate,
+                      cashDiscountRate,
+                      birthdayCouponAmount: 10000,
+                      cashTiers: [300000, 500000, 1000000]
+                    });
+                    showToast('설정이 저장되었습니다');
+                    setShowCashSettings(false);
+                  } catch {
+                    showToast('저장에 실패했습니다');
+                  }
+                }}
+                className="w-full py-3.5 bg-slate-900 text-white text-sm font-bold rounded-xl hover:bg-slate-800 active:scale-[0.98] transition-all"
+              >
+                저장하기
+              </button>
             </div>
           </div>
         )}

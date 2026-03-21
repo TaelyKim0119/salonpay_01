@@ -653,7 +653,11 @@ class GoogleSheetsDB {
 
   async getSettings() {
     this._ensureConnected();
-    if (this.isDemoMode) return { ...CONFIG.DEFAULTS };
+    if (this.isDemoMode) {
+      const saved = localStorage.getItem('salonpay_settings');
+      if (saved) return { ...CONFIG.DEFAULTS, ...JSON.parse(saved) };
+      return { ...CONFIG.DEFAULTS };
+    }
 
     const cacheKey = 'settings';
     const cached = this._getCache(cacheKey, CONFIG.CACHE.SETTINGS);
@@ -679,6 +683,37 @@ class GoogleSheetsDB {
       return settings;
     } catch {
       return CONFIG.DEFAULTS;
+    }
+  }
+
+  async saveSettings(settings) {
+    this._ensureConnected();
+    if (this.isDemoMode) {
+      // 데모 모드: 로컬에 저장
+      localStorage.setItem('salonpay_settings', JSON.stringify(settings));
+      this._clearCache('settings');
+      return settings;
+    }
+
+    try {
+      const rows = Object.entries(settings).map(([key, value]) => [
+        key,
+        typeof value === 'object' ? JSON.stringify(value) : String(value)
+      ]);
+      rows.unshift(['key', 'value']);
+
+      await window.gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `${CONFIG.SHEETS.SETTINGS}!A1:B${rows.length}`,
+        valueInputOption: 'RAW',
+        resource: { values: rows }
+      });
+
+      this._clearCache('settings');
+      return settings;
+    } catch (err) {
+      console.error('설정 저장 오류:', err);
+      throw err;
     }
   }
 
