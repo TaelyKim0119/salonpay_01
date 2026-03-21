@@ -363,7 +363,7 @@ export default function AdminDashboardPage() {
               <section className="rounded-2xl overflow-hidden shadow-md border border-slate-100 relative">
                 {/* 배경 이미지 — PC: 전체 배경 / 모바일: 상단 */}
                 <div className="relative w-full overflow-hidden">
-                  <img src="/images/admin-hero.jpg" alt="" className="w-full h-auto min-h-[200px] lg:min-h-[240px] object-cover object-center" />
+                  <img src="/images/admin-hero.jpg" alt="" className="w-full h-auto min-h-[260px] lg:min-h-[280px] object-cover object-center" />
                   <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/40" />
 
                   {/* 살롱 이름 뱃지 */}
