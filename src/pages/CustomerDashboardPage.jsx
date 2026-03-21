@@ -763,21 +763,21 @@ export default function CustomerDashboardPage() {
                     const isLatestVisit = sortedVisits.length > 0 && sortedVisits[0].id === v.id;
                     return (
                       <div className="mt-3 rounded-2xl border border-slate-100 bg-white shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2">
-                        {/* Style photo for latest visit */}
+                        {/* Style photo for latest visit — 세로 전체 표시 */}
                         {isLatestVisit && (
-                          <div className="relative h-48 overflow-hidden">
+                          <div className="relative overflow-hidden">
                             <img
                               src="/images/style-photo.jpg"
                               alt={t('stylePhoto') || '스타일 사진'}
-                              className="w-full h-full object-cover object-top"
+                              className="w-full object-contain"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                             <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
                               <div>
                                 <p className="text-white text-sm font-bold drop-shadow-lg">{v.service}</p>
                                 <p className="text-white/80 text-[11px] drop-shadow">{v.date}</p>
                               </div>
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/20 backdrop-blur-sm text-white`}>
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/20 backdrop-blur-sm text-white">
                                 <span className="size-1.5 rounded-full" style={{ backgroundColor: cat.color }} />{cat.label}
                               </span>
                             </div>
