@@ -897,60 +897,85 @@ export default function AdminDashboardPage() {
                   </div>
                 </section>
 
-                {/* At-Risk 5 */}
-                <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-red-100/50">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-red-400 text-lg">warning</span>
-                    <h2 className="text-base font-bold">At-Risk Customers</h2>
+                {/* At-Risk 5 — 위기 디자인 */}
+                <section className="rounded-xl overflow-hidden border-2 border-red-200 shadow-sm">
+                  {/* 위기 헤더 */}
+                  <div className="bg-gradient-to-r from-red-600 to-rose-500 px-5 py-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                          <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>emergency</span>
+                        </div>
+                        <div>
+                          <h2 className="text-white text-base font-black tracking-tight">At-Risk Customers</h2>
+                          <p className="text-white/60 text-[10px] font-medium">{atRiskList.length}명 이탈 위험</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm">
+                        <span className="w-2 h-2 rounded-full bg-red-300 animate-pulse" />
+                        <span className="text-[9px] font-bold text-white/90 uppercase tracking-wider">Live</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-3">
-                    {atRiskList.map((c) => {
+
+                  {/* 리스트 */}
+                  <div className="bg-red-50/30 p-3 lg:p-4 space-y-2.5">
+                    {atRiskList.map((c, ci) => {
                       const level = getCustomerLevel(c.totalSpent);
                       const severityColor = c.riskScore >= 40 ? '#ef4444' : c.riskScore >= 20 ? '#f59e0b' : '#64748b';
+                      const riskPhoto = `/images/customer-${(ci % 6) + 1}.png`;
+                      const riskBorder = c.riskScore >= 40 ? 'border-red-300 bg-white' : c.riskScore >= 20 ? 'border-amber-200 bg-white' : 'border-slate-200 bg-white';
                       return (
-                        <div key={c.id} className="rounded-xl border border-slate-100 overflow-hidden">
+                        <div key={c.id} className={`rounded-xl border-2 ${riskBorder} overflow-hidden`}>
                           {/* Header */}
                           <div
-                            className="flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-colors"
+                            className="flex items-center gap-3 px-3 py-3 cursor-pointer hover:bg-red-50/50 transition-colors"
                             onClick={() => handleCustomerClick(c.id)}
                           >
-                            <div className="relative">
-                              <div className={`w-9 h-9 rounded-full ${level.bg} ring-2 ${level.ring} flex items-center justify-center shrink-0`}>
-                                <span className="text-[10px] font-black" style={{ color: level.color }}>{level.short}</span>
+                            <div className="relative shrink-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-red-300">
+                                <img src={riskPhoto} alt={c.name} className="w-full h-full object-cover grayscale-[30%]" />
                               </div>
-                              <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 rounded-full flex items-center justify-center" style={{ backgroundColor: severityColor }}>
-                                <span className="material-symbols-outlined text-white text-[8px]">priority_high</span>
+                              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center shadow-sm" style={{ backgroundColor: severityColor }}>
+                                <span className="material-symbols-outlined text-white text-[9px]">priority_high</span>
                               </div>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold truncate">{c.name}</p>
-                              <span className="text-[10px] text-slate-400">마지막 방문: {c.lastVisit || '없음'}</span>
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-bold truncate">{c.name}</p>
+                                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: severityColor }}>
+                                  {c.riskScore >= 40 ? 'HIGH' : c.riskScore >= 20 ? 'MID' : 'LOW'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 mt-0.5">
+                                <span className="text-[10px] text-red-500 font-semibold">{c.daysSince}일 미방문</span>
+                                <span className="text-slate-300">·</span>
+                                <span className="text-[10px] text-slate-400">{c.lastVisit || '없음'}</span>
+                              </div>
                             </div>
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: severityColor + '15', color: severityColor }}>
-                              {c.riskScore >= 40 ? 'High' : c.riskScore >= 20 ? 'Mid' : 'Low'}
-                            </span>
+                            <span className="material-symbols-outlined text-slate-300 text-lg">chevron_right</span>
                           </div>
-                          {/* Reasons */}
-                          <div className="px-3 pb-2 space-y-1">
-                            {c.reasons.map((r, ri) => (
-                              <div key={ri} className="flex items-center gap-2 py-1">
+                          {/* Reasons — 위기 라인 */}
+                          <div className="px-3 pb-2 space-y-0.5 border-t border-red-100/60">
+                            {c.reasons.slice(0, 2).map((r, ri) => (
+                              <div key={ri} className="flex items-center gap-2 py-1.5">
                                 <span className="material-symbols-outlined text-sm" style={{ color: r.severity === 'high' ? '#ef4444' : r.severity === 'mid' ? '#f59e0b' : '#94a3b8' }}>{r.icon}</span>
                                 <span className="text-[10px] lg:text-[11px] text-slate-600 break-keep">{r.text}</span>
                               </div>
                             ))}
                           </div>
-                          {/* Coupon Strategy */}
+                          {/* Coupon Strategy — 빨간 강조 */}
                           {c.coupons.length > 0 && (
                             <div className="px-3 pb-3">
-                              {c.coupons.slice(0, 2).map((cp, ci) => (
+                              {c.coupons.slice(0, 1).map((cp, cpi) => (
                                 <button
-                                  key={ci}
+                                  key={cpi}
                                   onClick={(e) => { e.stopPropagation(); navigate('/admin/coupons'); }}
-                                  className="flex items-center gap-2 w-full mt-1 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg hover:bg-accent/10 transition-colors text-left"
+                                  className="flex items-center gap-2 w-full px-3 py-2 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-left"
                                 >
-                                  <span className="material-symbols-outlined text-accent text-sm">{cp.icon}</span>
-                                  <span className="text-[10px] lg:text-[11px] font-semibold text-accent flex-1">{cp.text}</span>
-                                  <span className="material-symbols-outlined text-accent/50 text-sm">arrow_forward</span>
+                                  <span className="material-symbols-outlined text-red-500 text-sm">{cp.icon}</span>
+                                  <span className="text-[10px] lg:text-[11px] font-bold text-red-600 flex-1">{cp.text}</span>
+                                  <span className="material-symbols-outlined text-red-400 text-sm">arrow_forward</span>
                                 </button>
                               ))}
                             </div>
@@ -959,8 +984,8 @@ export default function AdminDashboardPage() {
                       );
                     })}
                     {atRiskList.length === 0 && (
-                      <div className="text-center py-8 text-slate-300">
-                        <span className="material-symbols-outlined text-3xl mb-2">verified</span>
+                      <div className="text-center py-8 bg-white rounded-xl">
+                        <span className="material-symbols-outlined text-3xl mb-2 text-emerald-400">verified</span>
                         <p className="text-sm text-emerald-500 font-medium">모든 고객이 건강합니다!</p>
                       </div>
                     )}
