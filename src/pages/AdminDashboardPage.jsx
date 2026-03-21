@@ -671,55 +671,55 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    {/* 최고/최저 매출 인사이트 */}
+                    {/* 최고/최저 매출 인사이트 — 이미지 카드 */}
                     <div className="flex gap-3 mt-5 pt-5 border-t border-slate-50">
                       {/* Peak */}
-                      <div className="flex-1 relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-50 to-white border border-red-100/60 p-4">
-                        <div className="absolute -right-3 -top-3 opacity-[0.06]">
-                          <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 18 L10 10 Q12 7 14 10 L20 4" stroke="#ef4444" strokeWidth="3" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                            <path d="M10 16 L10 4" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" />
-                            <path d="M5 8 L10 3 L15 8" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                          </svg>
-                          <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">Peak</span>
-                          <span className="text-[10px] text-red-400 font-medium">{labels[maxIdx]}</span>
-                        </div>
-                        <p className="text-xl font-extrabold text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                        {topCatColors[maxIdx] && (
-                          <div className="flex items-center gap-1.5 mt-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[maxIdx].color }} />
-                            <span className="text-[11px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
-                            <span className="text-[11px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
+                      <div className="flex-1 relative overflow-hidden rounded-2xl border border-red-100/60">
+                        {/* 상단 이미지 */}
+                        <div className="relative h-24 bg-gradient-to-br from-rose-50 to-amber-50 overflow-hidden flex items-end justify-center">
+                          <img src="/images/thumbs-up.png" alt="Peak" className="h-[110%] object-contain object-bottom drop-shadow-md" />
+                          <div className="absolute top-2 left-2">
+                            <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">Peak</span>
                           </div>
-                        )}
+                          <div className="absolute top-2 right-2">
+                            <span className="text-[10px] text-red-400/80 font-medium bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded">{labels[maxIdx]}</span>
+                          </div>
+                        </div>
+                        {/* 하단 데이터 */}
+                        <div className="bg-white p-3">
+                          <p className="text-xl font-black text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                          {topCatColors[maxIdx] && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[maxIdx].color }} />
+                              <span className="text-[11px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
+                              <span className="text-[11px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       {/* Low */}
-                      <div className="flex-1 relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-100/60 p-4">
-                        <div className="absolute -right-3 -top-3 opacity-[0.06]">
-                          <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
-                            <path d="M4 4 L10 12 Q12 15 14 12 L20 18" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round" />
-                          </svg>
-                        </div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                            <path d="M10 4 L10 16" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" />
-                            <path d="M5 12 L10 17 L15 12" stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                          </svg>
-                          <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest">Low</span>
-                          <span className="text-[10px] text-blue-400 font-medium">{labels[minIdx]}</span>
-                        </div>
-                        <p className="text-xl font-extrabold text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                        {topCatColors[minIdx] && (
-                          <div className="flex items-center gap-1.5 mt-2">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[minIdx].color }} />
-                            <span className="text-[11px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
-                            <span className="text-[11px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
+                      <div className="flex-1 relative overflow-hidden rounded-2xl border border-blue-100/60">
+                        {/* 상단 이미지 */}
+                        <div className="relative h-24 bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden flex items-end justify-center">
+                          <img src="/images/thumbs-down.png" alt="Low" className="h-[110%] object-contain object-bottom drop-shadow-md" />
+                          <div className="absolute top-2 left-2">
+                            <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">Low</span>
                           </div>
-                        )}
+                          <div className="absolute top-2 right-2">
+                            <span className="text-[10px] text-blue-400/80 font-medium bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded">{labels[minIdx]}</span>
+                          </div>
+                        </div>
+                        {/* 하단 데이터 */}
+                        <div className="bg-white p-3">
+                          <p className="text-xl font-black text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                          {topCatColors[minIdx] && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[minIdx].color }} />
+                              <span className="text-[11px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
+                              <span className="text-[11px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </>
