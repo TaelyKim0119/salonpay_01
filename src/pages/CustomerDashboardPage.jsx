@@ -705,44 +705,49 @@ export default function CustomerDashboardPage() {
                 {/* Chart */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 lg:p-5 relative">
 
-                  {/* ── Style Pick — 강조 섹션 ── */}
+                  {/* ── Style Pick — 매거진 스타일 ── */}
                   {trendTip && (
-                    <div className="mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 border border-pink-200/60 shadow-sm">
-                      {/* Top accent bar */}
-                      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 h-1" />
-                      <div className="p-4">
-                        <div className="flex gap-3 items-start">
-                          {/* Icon area */}
-                          <div className="shrink-0 size-12 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-400/30">
-                            <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
-                          </div>
-                          {/* Text */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-[11px] font-black text-pink-500 uppercase tracking-wider">{t('stylePick') || 'Style Pick'}</span>
-                              <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse">HOT</span>
-                              <span className="text-[10px] text-pink-400/70 font-medium">{trendTip.month + 1}월</span>
-                            </div>
-                            <p className="text-[13px] text-slate-700 leading-relaxed">
-                              작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데, 올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
-                            </p>
-                            <p className="text-[11px] text-pink-400/80 mt-0.5 italic">{trendTip.reason}</p>
-                          </div>
+                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border border-slate-100">
+                      {/* 이미지 + 오버레이 */}
+                      <div className="relative">
+                        <img
+                          src="/images/style-pick.png"
+                          alt="Style Pick"
+                          className="w-full h-52 object-cover object-top"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                        {/* 상단 뱃지 */}
+                        <div className="absolute top-3 left-3 flex items-center gap-2">
+                          <span className="px-2.5 py-1 bg-white text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full shadow-lg">
+                            {t('stylePick') || 'Style Pick'}
+                          </span>
+                          <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse shadow-lg">HOT</span>
                         </div>
+                        {/* 하단 트렌드 이름 */}
+                        <div className="absolute bottom-3 left-4 right-4">
+                          <p className="text-white text-xl font-extrabold tracking-tight drop-shadow-lg">{trendTip.trend}</p>
+                          <p className="text-white/70 text-[11px] mt-0.5">{trendTip.reason}</p>
+                        </div>
+                      </div>
+                      {/* 하단 텍스트 + CTA */}
+                      <div className="p-4 bg-white">
+                        <p className="text-[13px] text-slate-700 leading-relaxed">
+                          작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데, 올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
+                        </p>
 
-                        {/* Coupon CTA */}
+                        {/* 쿠폰 연계 */}
                         {coupons.length > 0 && (
-                          <div className="mt-3 flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl p-2.5 border border-pink-100">
-                            <span className="material-symbols-outlined text-amber-500 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
+                          <div className="mt-3 flex items-center gap-2.5 bg-amber-50 rounded-xl p-3 border border-amber-100">
+                            <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[11px] font-bold text-slate-700">
+                              <p className="text-[12px] font-bold text-slate-800">
                                 {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
                               </p>
-                              <p className="text-[10px] text-slate-400">{coupons.length}장의 쿠폰 사용 가능</p>
+                              <p className="text-[10px] text-slate-400">{coupons.length}장 사용 가능</p>
                             </div>
                             <button
                               onClick={() => setActiveTab('coupons')}
-                              className="shrink-0 px-3 py-1.5 bg-pink-500 text-white text-[10px] font-bold rounded-lg hover:bg-pink-600 active:scale-95 transition-all shadow-sm"
+                              className="shrink-0 px-3.5 py-2 bg-slate-900 text-white text-[11px] font-bold rounded-lg hover:bg-slate-800 active:scale-95 transition-all"
                             >
                               {t('viewCoupons') || '쿠폰 보기'}
                             </button>
