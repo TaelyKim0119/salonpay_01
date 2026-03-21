@@ -93,7 +93,6 @@ export default function AdminDashboardPage() {
   const [allVisits, setAllVisits] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [allCoupons, setAllCoupons] = useState([]);
-  const [couponSort, setCouponSort] = useState('rate'); // 'rate' | 'issued' | 'speed'
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showSettings, setShowSettings] = useState(false);
   const [chartPeriod, setChartPeriod] = useState('weekly');
@@ -1071,7 +1070,7 @@ export default function AdminDashboardPage() {
               )}
             </div>
           </section>
-          {/* ── Coupon Response Analysis ── */}
+          {/* ── Coupon Analysis (간결 시각화) ── */}
           {(() => {
             const today = new Date();
             const todayStr = today.toISOString().split('T')[0];
@@ -1081,300 +1080,94 @@ export default function AdminDashboardPage() {
 
             if (allCoupons.length === 0) return null;
 
-            // ── 이번달 / 이번주 기간 계산 ──
-            const thisYM = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-            const mStart = `${today.getMonth() + 1}.1`;
-            const mEnd = `${today.getMonth() + 1}.${today.getDate()}`;
-            const dayOfWeek = today.getDay() || 7;
-            const wMonday = new Date(today); wMonday.setDate(today.getDate() - dayOfWeek + 1);
-            const wSunday = new Date(wMonday); wSunday.setDate(wMonday.getDate() + 6);
-            const wStart = `${wMonday.getMonth() + 1}.${wMonday.getDate()}`;
-            const wEnd = `${wSunday.getMonth() + 1}.${wSunday.getDate()}`;
-            const weekDates = [];
-            for (let i = 0; i < 7; i++) { const d = new Date(wMonday); d.setDate(wMonday.getDate() + i); weekDates.push(d.toISOString().slice(0, 10)); }
+            const totalAll = allCoupons.length;
+            const usedAll = allCoupons.filter(c => c.isUsed).length;
+            const activeAll = allCoupons.filter(c => !c.isUsed && c.expiryDate >= todayStr).length;
+            const expiredAll = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
+            const useRate = totalAll > 0 ? Math.round((usedAll / totalAll) * 100) : 0;
 
-            const monthCoupons = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(thisYM));
-            const weekCoupons = allCoupons.filter(c => c.createdAt && weekDates.includes(c.createdAt));
-
-            const calcStats = (list) => ({
-              total: list.length,
-              used: list.filter(c => c.isUsed).length,
-              expired: list.filter(c => !c.isUsed && c.expiryDate < todayStr).length,
-              active: list.filter(c => !c.isUsed && c.expiryDate >= todayStr).length,
-              rate: list.length > 0 ? Math.round((list.filter(c => c.isUsed).length / list.length) * 100) : 0,
+            // 타입별 집계
+            const typeMap = {};
+            allCoupons.forEach(c => {
+              if (!typeMap[c.type]) typeMap[c.type] = { issued: 0, used: 0 };
+              typeMap[c.type].issued++;
+              if (c.isUsed) typeMap[c.type].used++;
             });
-            const mStats = calcStats(monthCoupons);
-            const wStats = calcStats(weekCoupons);
-
-            // ── 최근 3개월 쿠폰 종합 데이터 ──
-            const months3 = [];
-            for (let i = 0; i < 3; i++) {
-              const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-              const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-              months3.push({ ym, label: `${d.getMonth() + 1}월` });
-            }
-            const coupons3m = allCoupons.filter(c => c.createdAt && months3.some(m => c.createdAt.startsWith(m.ym)));
-            // 타입별 종합: 발행수, 사용수, 사용률, 반응시간
-            const typeStatsMap = {};
-            coupons3m.forEach(c => {
-              if (!typeStatsMap[c.type]) typeStatsMap[c.type] = { issued: 0, used: 0, days: [] };
-              typeStatsMap[c.type].issued++;
-              if (c.isUsed && c.usedAt) {
-                typeStatsMap[c.type].used++;
-                typeStatsMap[c.type].days.push(Math.max(0, Math.round((new Date(c.usedAt) - new Date(c.createdAt)) / 86400000)));
-              }
-            });
-            const responseData = Object.entries(typeStatsMap).map(([type, s]) => ({
-              type,
-              issued: s.issued,
-              used: s.used,
-              rate: s.issued > 0 ? Math.round((s.used / s.issued) * 100) : 0,
-              avg: s.days.length > 0 ? Math.round(s.days.reduce((a, b) => a + b, 0) / s.days.length) : null,
-              min: s.days.length > 0 ? Math.min(...s.days) : null,
-              max: s.days.length > 0 ? Math.max(...s.days) : null,
-              count: s.days.length,
-              days: s.days,
-            }));
-            // 정렬
-            const sortedData = [...responseData].sort((a, b) => {
-              if (couponSort === 'rate') return b.rate - a.rate;
-              if (couponSort === 'issued') return b.issued - a.issued;
-              return (a.avg || 999) - (b.avg || 999); // speed: 빠른 순
-            });
-            const maxDays = Math.max(...responseData.filter(r => r.max !== null).map(r => r.max), 1);
-            const bestPerformer = [...responseData].sort((a, b) => b.rate - a.rate)[0];
-            // month3Data for AI eval
-            const month3Data = months3.map(m => {
-              const mc = allCoupons.filter(c => c.createdAt && c.createdAt.startsWith(m.ym));
-              return { ...m, total: mc.length, used: mc.filter(c => c.isUsed).length };
-            });
-
-            // ── AI 평가 생성 ──
-            const monthRates = month3Data.map(m => ({ label: m.label, rate: m.total > 0 ? Math.round((m.used / m.total) * 100) : 0, total: m.total }));
-            const bestMonth = [...monthRates].sort((a, b) => b.rate - a.rate)[0];
-            const thisMonthRate = monthRates[0];
-            const lastMonthRate = monthRates[1];
-
-            // 시즌 이벤트 감지
-            const monthNum = today.getMonth() + 1;
-            const seasonEvents = {
-              1: '새해 프로모션', 2: '발렌타인데이', 3: '화이트데이',
-              4: '봄시즌', 5: '가정의 달', 6: '여름 준비 시즌',
-              7: '여름 바캉스', 8: '휴가 시즌', 9: '가을 시즌',
-              10: '할로윈', 11: '블프 시즌', 12: '크리스마스/연말'
-            };
-            const fastestType = responseData[0];
-
-            let evalIcon = 'insights';
-            let evalColor = '#8b5cf6';
-            let evalTitle = '';
-            let evalDesc = '';
-
-            if (thisMonthRate.rate >= (lastMonthRate?.rate || 0) && thisMonthRate.rate > 0) {
-              evalIcon = 'trending_up';
-              evalColor = '#10b981';
-              evalTitle = `${thisMonthRate.label} 쿠폰 사용률 ${thisMonthRate.rate}% — ${bestMonth.label === thisMonthRate.label ? '최고치!' : '상승세!'}`;
-              evalDesc = `${seasonEvents[monthNum]} 효과로 쿠폰 반응이 좋아요.${fastestType ? ` ${typeLabels[fastestType.type] || fastestType.type} 쿠폰이 평균 ${fastestType.avg}일만에 사용되어 반응이 가장 빠릅니다.` : ''} 이 흐름을 유지하며 타겟 쿠폰을 더 적극 활용해보세요.`;
-            } else if (thisMonthRate.rate < (lastMonthRate?.rate || 0)) {
-              evalIcon = 'trending_down';
-              evalColor = '#f59e0b';
-              evalTitle = `${thisMonthRate.label} 사용률 ${thisMonthRate.rate}% — 지난달 대비 하락`;
-              evalDesc = `지난달(${lastMonthRate.rate}%) 대비 떨어졌어요. 유효기간을 짧게 설정하거나 문자 알림을 보내면 사용률을 올릴 수 있어요.${fastestType ? ` ${typeLabels[fastestType.type] || fastestType.type} 쿠폰(평균 ${fastestType.avg}일)에 집중해보세요.` : ''}`;
-            } else {
-              evalTitle = '쿠폰 데이터가 쌓이고 있어요';
-              evalDesc = '다음달이면 더 정확한 트렌드 분석이 가능해요. 다양한 타입의 쿠폰을 발행해서 고객 반응을 테스트해보세요.';
-            }
+            const typeData = Object.entries(typeMap)
+              .map(([type, s]) => ({ type, ...s, rate: s.issued > 0 ? Math.round((s.used / s.issued) * 100) : 0 }))
+              .sort((a, b) => b.issued - a.issued);
+            const maxIssued = Math.max(...typeData.map(d => d.issued), 1);
 
             return (
               <section id="chart-coupon-src" className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
+                {/* 헤더 */}
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
                     <h2 className="text-base font-bold">Coupon Analysis</h2>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
-                      쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
-                    </button>
-                    <button onClick={() => setExpandedChart('coupon')}
-                      className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors">
-                      <span className="material-symbols-outlined text-slate-500 text-[16px]">open_in_full</span>
-                    </button>
+                  <button onClick={() => navigate('/admin/coupons')} className="text-[11px] font-semibold text-accent hover:underline flex items-center gap-0.5">
+                    쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                </div>
+
+                {/* 전체 요약 — 3칸 */}
+                <div className="grid grid-cols-3 gap-2 mb-5">
+                  <div className="text-center p-3 rounded-xl bg-emerald-50">
+                    <p className="text-2xl font-black text-emerald-600">{usedAll}</p>
+                    <p className="text-[10px] text-emerald-600/70 font-semibold mt-0.5">사용됨</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-blue-50">
+                    <p className="text-2xl font-black text-blue-600">{activeAll}</p>
+                    <p className="text-[10px] text-blue-600/70 font-semibold mt-0.5">진행중</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-red-50">
+                    <p className="text-2xl font-black text-red-500">{expiredAll}</p>
+                    <p className="text-[10px] text-red-500/70 font-semibold mt-0.5">만료</p>
                   </div>
                 </div>
 
-                {/* ── 전체 쿠폰 현황 도넛 차트 ── */}
-                {(() => {
-                  const totalAll = allCoupons.length;
-                  const usedAll = allCoupons.filter(c => c.isUsed).length;
-                  const expiredAll = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
-                  const activeAll = allCoupons.filter(c => !c.isUsed && c.expiryDate >= todayStr).length;
-                  const segs = [
-                    { label: '사용됨', value: usedAll, color: '#10b981', icon: 'check_circle' },
-                    { label: '진행중', value: activeAll, color: '#3b82f6', icon: 'hourglass_top' },
-                    { label: '만료', value: expiredAll, color: '#ef4444', icon: 'timer_off' },
-                  ];
-                  const r = 46, cx = 56, cy = 56, stroke = 14;
-                  const circumference = 2 * Math.PI * r;
-                  let offset = 0;
-                  const useRate = totalAll > 0 ? Math.round((usedAll / totalAll) * 100) : 0;
-                  return (
-                    <div className="mb-5 p-4 rounded-xl border border-slate-100 bg-gradient-to-br from-slate-50 to-white">
-                      <div className="flex items-center gap-4">
-                        {/* 도넛 */}
-                        <div className="relative shrink-0" style={{ width: 112, height: 112 }}>
-                          <svg viewBox="0 0 112 112" className="w-full h-full -rotate-90">
-                            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth={stroke} />
-                            {totalAll > 0 && segs.map((seg, si) => {
-                              if (seg.value === 0) return null;
-                              const pct = seg.value / totalAll;
-                              const dashLen = pct * circumference;
-                              const gap = segs.filter(s => s.value > 0).length > 1 ? 3 : 0;
-                              const el = (
-                                <circle key={si} cx={cx} cy={cy} r={r} fill="none"
-                                  stroke={seg.color} strokeWidth={stroke}
-                                  strokeDasharray={`${Math.max(dashLen - gap, 1)} ${circumference - Math.max(dashLen - gap, 1)}`}
-                                  strokeDashoffset={-offset}
-                                  strokeLinecap="round" className="transition-all duration-700" />
-                              );
-                              offset += dashLen;
-                              return el;
-                            })}
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-2xl font-extrabold text-slate-800">{totalAll}</span>
-                            <span className="text-[9px] text-slate-400 font-semibold">총 발행</span>
+                {/* 전체 사용률 바 */}
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] text-slate-500 font-medium">전체 사용률</span>
+                    <span className="text-lg font-black text-slate-800">{useRate}%</span>
+                  </div>
+                  <div className="h-3 bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${useRate}%`, background: useRate >= 60 ? '#10b981' : useRate >= 30 ? '#3b82f6' : '#f59e0b' }} />
+                  </div>
+                  <p className="text-[10px] text-slate-400 mt-1.5 text-right">총 {totalAll}장 발행</p>
+                </div>
+
+                {/* 타입별 — 수평 바 차트 */}
+                <div className="space-y-3">
+                  {typeData.map(d => {
+                    const color = typeColors[d.type] || '#94a3b8';
+                    const icon = typeIcons[d.type] || 'confirmation_number';
+                    const barW = Math.max((d.issued / maxIssued) * 100, 8);
+                    const usedW = d.issued > 0 ? (d.used / d.issued) * barW : 0;
+                    return (
+                      <div key={d.type}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="material-symbols-outlined text-sm" style={{ color }}>{icon}</span>
+                            <span className="text-[12px] font-bold text-slate-700">{typeLabels[d.type] || d.type}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-slate-400">{d.used}/{d.issued}</span>
+                            <span className="text-[12px] font-black min-w-[32px] text-right" style={{ color: d.rate >= 60 ? '#10b981' : d.rate >= 30 ? '#3b82f6' : '#94a3b8' }}>{d.rate}%</span>
                           </div>
                         </div>
-                        {/* 범례 + 수치 */}
-                        <div className="flex-1 min-w-0 space-y-2.5">
-                          {segs.map((seg, si) => {
-                            const pct = totalAll > 0 ? Math.round((seg.value / totalAll) * 100) : 0;
-                            return (
-                              <div key={si}>
-                                <div className="flex items-center gap-2 mb-1">
-                                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: seg.color }} />
-                                  <span className="text-[11px] text-slate-500 flex-1">{seg.label}</span>
-                                  <span className="text-[13px] font-extrabold text-slate-700">{seg.value}</span>
-                                  <span className="text-[11px] font-bold w-9 text-right" style={{ color: seg.color }}>{pct}%</span>
-                                </div>
-                                <div className="ml-[18px] h-1 bg-slate-100 rounded-full overflow-hidden">
-                                  <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: seg.color }} />
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                          {/* 발행 (연한 색) */}
+                          <div className="h-full rounded-full relative" style={{ width: `${barW}%`, backgroundColor: color + '20' }}>
+                            {/* 사용 (진한 색) */}
+                            <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${d.issued > 0 ? (d.used / d.issued) * 100 : 0}%`, backgroundColor: color }} />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })()}
-
-                {/* ── Best Performer 하이라이트 ── */}
-                {bestPerformer && bestPerformer.rate > 0 && (
-                  <div className="mb-4 p-3 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-emerald-500 text-base">emoji_events</span>
-                      <span className="text-[12px] font-extrabold text-emerald-700">
-                        {typeLabels[bestPerformer.type]} 쿠폰: {bestPerformer.rate}% 전환{bestPerformer.rate === 100 ? ' 완료' : ''}
-                      </span>
-                      {bestPerformer.avg !== null && (
-                        <span className="text-[10px] text-emerald-500 ml-auto">평균 {bestPerformer.avg}일 반응</span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* ── 쿠폰 타입별 분석 ── */}
-                <div className="mb-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">쿠폰 타입별 분석</p>
-                    <div className="flex gap-1">
-                      {[
-                        { key: 'rate', label: '사용률순', icon: 'percent' },
-                        { key: 'issued', label: '발행순', icon: 'sort' },
-                        { key: 'speed', label: '반응순', icon: 'speed' },
-                      ].map(f => (
-                        <button key={f.key} onClick={() => setCouponSort(f.key)}
-                          className={`text-[9px] px-2 py-1 rounded-md font-semibold flex items-center gap-0.5 transition-all ${couponSort === f.key ? 'bg-violet-500 text-white shadow-sm' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'}`}>
-                          <span className="material-symbols-outlined" style={{ fontSize: 11 }}>{f.icon}</span>
-                          {f.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  {sortedData.length === 0 ? (
-                    <p className="text-[11px] text-slate-400 text-center py-4">쿠폰 데이터가 없어요</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {sortedData.map((r, ri) => {
-                        const color = typeColors[r.type] || '#94a3b8';
-                        const rateColor = r.rate >= 80 ? '#10b981' : r.rate >= 50 ? '#3b82f6' : r.rate >= 25 ? '#f59e0b' : '#94a3b8';
-                        const speedColor = r.avg !== null ? (r.avg <= 5 ? '#10b981' : r.avg <= 14 ? '#f59e0b' : '#ef4444') : '#94a3b8';
-                        const barW = r.issued > 0 ? Math.max(r.rate, 4) : 0;
-                        return (
-                          <div key={r.type} className="p-3 rounded-xl border border-slate-50 bg-gradient-to-br from-white to-slate-50/50 hover:border-slate-200 transition-all">
-                            {/* 헤더: 아이콘 + 이름 + 사용률 */}
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: color + '15' }}>
-                                <span className="material-symbols-outlined text-sm" style={{ color }}>{typeIcons[r.type] || 'confirmation_number'}</span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <span className="text-[12px] font-bold text-slate-700">{typeLabels[r.type] || r.type}</span>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-[10px] text-slate-400">{r.issued}건 발행 · {r.used}건 사용</span>
-                                  {r.avg !== null && (
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ backgroundColor: speedColor + '15', color: speedColor }}>
-                                      ~{r.avg}일
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right shrink-0">
-                                <span className="text-xl font-extrabold" style={{ color: rateColor }}>{r.rate}</span>
-                                <span className="text-[11px] font-bold" style={{ color: rateColor }}>%</span>
-                              </div>
-                            </div>
-                            {/* 사용률 바 + 퍼센트 표시 */}
-                            <div className="relative">
-                              <div className="h-5 bg-slate-100 rounded-lg overflow-hidden relative">
-                                <div className="absolute inset-y-0 left-0 rounded-lg transition-all" style={{ width: `${barW}%`, background: `linear-gradient(90deg, ${color}60, ${color})` }} />
-                                {r.count > 0 && r.days.map((d, di) => (
-                                  <div key={di} className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-white" style={{ left: `${Math.min(Math.max((d / maxDays) * 60 + 40, 2), 98)}%`, backgroundColor: color, opacity: 0.7 }} />
-                                ))}
-                                {r.used > 0 && (
-                                  <div className="absolute inset-0 flex items-center px-2">
-                                    <span className="text-[9px] font-bold" style={{ color: barW > 40 ? 'white' : color }}>{r.used}/{r.issued}</span>
-                                  </div>
-                                )}
-                              </div>
-                              {/* 막대 끝에 퍼센트 */}
-                              <span className="absolute right-0 -top-0.5 text-[10px] font-extrabold" style={{ color: rateColor }}>{r.rate}%</span>
-                            </div>
-                            {r.avg !== null && (
-                              <div className="flex justify-between mt-1.5">
-                                <span className="text-[9px] text-slate-300">반응: 최소 {r.min}일 · 최대 {r.max}일</span>
-                                <span className="text-[9px] font-semibold" style={{ color: speedColor }}>평균 {r.avg}일</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                {/* ── AI 평가 ── */}
-                <div className="p-4 rounded-xl border border-slate-100 bg-gradient-to-r from-violet-50/50 via-white to-emerald-50/30">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: evalColor + '15' }}>
-                      <span className="material-symbols-outlined text-base" style={{ color: evalColor }}>{evalIcon}</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800 mb-1">{evalTitle}</p>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">{evalDesc}</p>
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
               </section>
             );
