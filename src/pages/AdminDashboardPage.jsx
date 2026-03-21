@@ -1155,9 +1155,8 @@ export default function AdminDashboardPage() {
                     winback: 'from-violet-600/80 to-indigo-900/70',
                   };
                   return (
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-3">
                       {typeData.slice(0, 4).map(d => {
-                        const color = typeColors[d.type] || '#94a3b8';
                         const segs = [
                           { label: '사용됨', value: d.used, color: statusColors.used },
                           { label: '진행중', value: d.active, color: statusColors.active },
@@ -1167,40 +1166,43 @@ export default function AdminDashboardPage() {
                         const img = typeImages[d.type];
                         const grad = typeGradients[d.type] || 'from-slate-600/80 to-slate-900/70';
                         return (
-                          <div key={d.type} className="rounded-xl overflow-hidden border border-slate-100 shadow-sm">
-                            {/* 이미지 헤더 */}
-                            <div className="relative h-24 overflow-hidden">
+                          <div key={d.type} className="flex rounded-xl overflow-hidden border border-slate-100 shadow-sm h-28">
+                            {/* 왼쪽: 이미지 */}
+                            <div className="relative w-28 shrink-0 overflow-hidden">
                               {img && <img src={img} alt={typeLabels[d.type]} className="absolute inset-0 w-full h-full object-cover" />}
-                              <div className={`absolute inset-0 bg-gradient-to-t ${grad}`} />
+                              <div className={`absolute inset-0 bg-gradient-to-r ${grad}`} />
                               <div className="relative z-10 flex flex-col justify-end h-full p-3">
-                                <span className="text-white/70 text-[10px] font-semibold uppercase tracking-wider">Coupon</span>
-                                <span className="text-white text-sm font-bold leading-tight">{typeLabels[d.type] || d.type}</span>
+                                <span className="text-white/70 text-[9px] font-semibold uppercase tracking-wider">Coupon</span>
+                                <span className="text-white text-[13px] font-bold leading-tight">{typeLabels[d.type] || d.type}</span>
                               </div>
                             </div>
-                            {/* 도넛 + 수치 */}
-                            <div className="bg-white p-3">
-                              <div className="relative mx-auto" style={{ width: 80, height: 80 }}>
+                            {/* 오른쪽: 도넛 + 수치 */}
+                            <div className="flex-1 bg-white flex items-center gap-3 px-3">
+                              <div className="relative shrink-0" style={{ width: 70, height: 70 }}>
                                 <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                                   <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
                                   {donutArcs(segs, 50, 50, 38, 10)}
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                  <span className="text-base font-black text-slate-800">{curUseRate}%</span>
-                                  <span className="text-[7px] text-slate-400 font-semibold">사용률</span>
+                                  <span className="text-sm font-black text-slate-800">{curUseRate}%</span>
+                                  <span className="text-[6px] text-slate-400 font-semibold">사용률</span>
                                 </div>
                               </div>
-                              <div className="flex justify-between mt-2 px-0.5">
-                                <div className="text-center flex-1">
-                                  <p className="text-[12px] font-black text-emerald-600">{d.used}</p>
-                                  <p className="text-[7px] text-slate-400">사용</p>
+                              <div className="flex flex-col gap-1.5 min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                  <span className="text-[11px] text-slate-500">사용</span>
+                                  <span className="text-[12px] font-black text-slate-800 ml-auto">{d.used}</span>
                                 </div>
-                                <div className="text-center flex-1">
-                                  <p className="text-[12px] font-black text-blue-600">{d.active}</p>
-                                  <p className="text-[7px] text-slate-400">진행</p>
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                  <span className="text-[11px] text-slate-500">진행</span>
+                                  <span className="text-[12px] font-black text-slate-800 ml-auto">{d.active}</span>
                                 </div>
-                                <div className="text-center flex-1">
-                                  <p className="text-[12px] font-black text-red-500">{d.expired}</p>
-                                  <p className="text-[7px] text-slate-400">만료</p>
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                                  <span className="text-[11px] text-slate-500">만료</span>
+                                  <span className="text-[12px] font-black text-slate-800 ml-auto">{d.expired}</span>
                                 </div>
                               </div>
                             </div>
