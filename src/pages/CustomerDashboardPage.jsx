@@ -705,54 +705,63 @@ export default function CustomerDashboardPage() {
                 {/* Chart */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 lg:p-5 relative">
 
-                  {/* ── Style Pick — 매거진 스타일 ── */}
+                  {/* ── Style Pick — 매거진 카드 (반응형) ── */}
                   {trendTip && (
-                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border border-slate-100">
-                      {/* 이미지 + 오버레이 */}
-                      <div className="relative">
-                        <img
-                          src="/images/style-pick.png"
-                          alt="Style Pick"
-                          className="w-full h-52 object-cover object-top"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                        {/* 상단 뱃지 */}
-                        <div className="absolute top-3 left-3 flex items-center gap-2">
-                          <span className="px-2.5 py-1 bg-white text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full shadow-lg">
-                            {t('stylePick') || 'Style Pick'}
-                          </span>
-                          <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse shadow-lg">HOT</span>
+                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border border-slate-100 bg-white">
+                      {/* 모바일: 세로 레이아웃 / PC: 가로 레이아웃 */}
+                      <div className="flex flex-col lg:flex-row">
+                        {/* 이미지 영역 */}
+                        <div className="relative w-full lg:w-1/2 aspect-[16/10] lg:aspect-auto lg:min-h-[220px] overflow-hidden">
+                          <img
+                            src="/images/style-pick.png"
+                            alt="Style Pick"
+                            className="absolute inset-0 w-full h-full object-cover object-center"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-black/20" />
+                          {/* 뱃지 */}
+                          <div className="absolute top-3 left-3 flex items-center gap-2">
+                            <span className="px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full shadow">
+                              {t('stylePick') || 'Style Pick'}
+                            </span>
+                            <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse shadow">HOT</span>
+                          </div>
+                          {/* 모바일 하단 트렌드명 */}
+                          <div className="absolute bottom-3 left-4 right-4 lg:hidden">
+                            <p className="text-white text-lg font-extrabold tracking-tight drop-shadow-lg">{trendTip.trend}</p>
+                            <p className="text-white/70 text-[11px] mt-0.5">{trendTip.reason}</p>
+                          </div>
                         </div>
-                        {/* 하단 트렌드 이름 */}
-                        <div className="absolute bottom-3 left-4 right-4">
-                          <p className="text-white text-xl font-extrabold tracking-tight drop-shadow-lg">{trendTip.trend}</p>
-                          <p className="text-white/70 text-[11px] mt-0.5">{trendTip.reason}</p>
-                        </div>
-                      </div>
-                      {/* 하단 텍스트 + CTA */}
-                      <div className="p-4 bg-white">
-                        <p className="text-[13px] text-slate-700 leading-relaxed">
-                          작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데, 올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
-                        </p>
 
-                        {/* 쿠폰 연계 */}
-                        {coupons.length > 0 && (
-                          <div className="mt-3 flex items-center gap-2.5 bg-amber-50 rounded-xl p-3 border border-amber-100">
-                            <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[12px] font-bold text-slate-800">
-                                {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
-                              </p>
-                              <p className="text-[10px] text-slate-400">{coupons.length}장 사용 가능</p>
-                            </div>
+                        {/* 텍스트 + CTA */}
+                        <div className="flex-1 p-4 lg:p-5 flex flex-col justify-center">
+                          {/* PC 트렌드명 */}
+                          <div className="hidden lg:block mb-2">
+                            <p className="text-slate-900 text-xl font-extrabold tracking-tight">{trendTip.trend}</p>
+                            <p className="text-slate-400 text-xs mt-0.5">{trendTip.reason}</p>
+                          </div>
+
+                          <p className="text-[13px] text-slate-600 leading-relaxed">
+                            작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데,{' '}
+                            올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
+                          </p>
+
+                          {/* 쿠폰 CTA */}
+                          {coupons.length > 0 && (
                             <button
                               onClick={() => setActiveTab('coupons')}
-                              className="shrink-0 px-3.5 py-2 bg-slate-900 text-white text-[11px] font-bold rounded-lg hover:bg-slate-800 active:scale-95 transition-all"
+                              className="mt-3 flex items-center gap-2.5 w-full bg-slate-50 hover:bg-slate-100 rounded-xl p-3 border border-slate-100 transition-colors group"
                             >
-                              {t('viewCoupons') || '쿠폰 보기'}
+                              <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
+                              <div className="flex-1 text-left min-w-0">
+                                <p className="text-[12px] font-bold text-slate-800">
+                                  {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
+                                </p>
+                                <p className="text-[10px] text-slate-400">{coupons.length}장 사용 가능</p>
+                              </div>
+                              <span className="material-symbols-outlined text-slate-300 group-hover:text-slate-500 text-lg transition-colors">chevron_right</span>
                             </button>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
