@@ -898,22 +898,15 @@ export default function AdminDashboardPage() {
 
                 {/* At-Risk 5 — 위기 디자인 */}
                 <section className="rounded-xl overflow-hidden border-2 border-red-200 shadow-sm">
-                  {/* 위기 헤더 — 사이렌 이미지 */}
-                  <div className="relative bg-gradient-to-r from-red-600 to-rose-500 px-5 py-4 overflow-hidden">
-                    <img src="/images/alert-siren.png" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 h-16 object-contain opacity-30" />
-                    <div className="relative flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>emergency</span>
-                        </div>
-                        <div>
-                          <h2 className="text-white text-base font-black tracking-tight">At-Risk Customers</h2>
-                          <p className="text-white/60 text-[10px] font-medium">{atRiskList.length}명 이탈 위험</p>
-                        </div>
+                  {/* 위기 헤더 */}
+                  <div className="bg-gradient-to-r from-red-600 to-rose-500 px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 shrink-0">
+                        <img src="/images/alert-siren.png" alt="" className="w-full h-full object-contain drop-shadow-lg" />
                       </div>
-                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/15 backdrop-blur-sm">
-                        <span className="w-2 h-2 rounded-full bg-red-300 animate-pulse" />
-                        <span className="text-[9px] font-bold text-white/90 uppercase tracking-wider">Live</span>
+                      <div>
+                        <h2 className="text-white text-base font-black tracking-tight">At-Risk Customers</h2>
+                        <p className="text-white/60 text-[10px] font-medium">{atRiskList.length}명 이탈 위험</p>
                       </div>
                     </div>
                   </div>
