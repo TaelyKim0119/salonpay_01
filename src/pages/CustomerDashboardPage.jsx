@@ -925,7 +925,7 @@ export default function CustomerDashboardPage() {
 
 
 
-              {/* ── 총 할인 혜택 ── */}
+              {/* ── 할인 혜택 — 프리미엄 디자인 ── */}
               {allVisits.length > 0 && (() => {
                 const totalDiscount = allVisits.reduce((s, v) => s + (v.discount || 0), 0);
                 const totalPointsUsed = allVisits.reduce((s, v) => s + (v.pointsUsed || 0), 0);
@@ -934,27 +934,51 @@ export default function CustomerDashboardPage() {
                 if (totalSaved === 0 && usedCoupons === 0) return null;
                 return (
                   <section className="px-6 lg:px-8 pt-4 pb-2">
-                    <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-5 shadow-lg shadow-emerald-500/20 relative overflow-hidden">
-                      <div className="absolute top-[-10%] right-[-5%] opacity-15 pointer-events-none">
-                        <span className="material-symbols-outlined text-white text-[100px]">savings</span>
-                      </div>
-                      <div className="relative z-10">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="material-symbols-outlined text-white/90 text-lg">local_offer</span>
-                          <span className="text-white/80 text-xs font-bold uppercase tracking-wider">{t('mySavings') || 'My Savings'}</span>
-                        </div>
-                        <p className="text-white text-3xl font-extrabold mb-1">
-                          {formatNumber(totalSaved)}<span className="text-lg font-normal opacity-80">{t('won')}</span>
-                        </p>
-                        <p className="text-white/60 text-xs mb-4">{t('totalSavedDesc') || '총 할인 + 포인트 사용 혜택'}</p>
-                        <div className="flex gap-4">
-                          <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-white/60 text-[10px] font-semibold mb-1">{t('couponDiscount') || '쿠폰 할인'}</p>
-                            <p className="text-white text-lg font-extrabold">{formatNumber(totalDiscount)}<span className="text-xs opacity-70">{t('won')}</span></p>
+                    <div className="rounded-2xl overflow-hidden shadow-md border border-slate-100 bg-white">
+                      <div className="flex flex-col lg:flex-row">
+                        {/* 왼쪽: 금액 + 텍스트 */}
+                        <div className="flex-1 p-5 lg:p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative">
+                          {/* 배경 장식 */}
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                          <div className="absolute bottom-0 left-0 w-24 h-24 bg-teal-400/10 rounded-full blur-2xl pointer-events-none" />
+
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="size-7 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                                <span className="material-symbols-outlined text-emerald-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>savings</span>
+                              </div>
+                              <span className="text-white/60 text-[11px] font-bold uppercase tracking-widest">{t('mySavings') || 'My Savings'}</span>
+                            </div>
+                            <p className="text-white text-4xl lg:text-5xl font-black tracking-tight mb-1">
+                              {formatNumber(totalSaved)}<span className="text-base font-medium text-white/50 ml-1">{t('won')}</span>
+                            </p>
+                            <p className="text-white/40 text-xs mb-5">{t('totalSavedDesc') || '총 할인 + 포인트 사용 혜택'}</p>
+
+                            <div className="flex gap-3">
+                              <div className="flex-1 bg-white/8 rounded-xl p-3 border border-white/5">
+                                <p className="text-white/40 text-[10px] font-semibold mb-1.5">{t('couponDiscount') || '쿠폰 할인'}</p>
+                                <p className="text-emerald-400 text-lg font-extrabold">{formatNumber(totalDiscount)}<span className="text-[10px] text-emerald-400/60 ml-0.5">{t('won')}</span></p>
+                              </div>
+                              <div className="flex-1 bg-white/8 rounded-xl p-3 border border-white/5">
+                                <p className="text-white/40 text-[10px] font-semibold mb-1.5">{t('pointsUsedLabel') || '포인트 사용'}</p>
+                                <p className="text-teal-400 text-lg font-extrabold">{formatNumber(totalPointsUsed)}<span className="text-[10px] text-teal-400/60 ml-0.5">P</span></p>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-white/60 text-[10px] font-semibold mb-1">{t('pointsUsedLabel') || '포인트 사용'}</p>
-                            <p className="text-white text-lg font-extrabold">{formatNumber(totalPointsUsed)}<span className="text-xs opacity-70">P</span></p>
+                        </div>
+
+                        {/* 오른쪽: 사진 */}
+                        <div className="relative w-full lg:w-48 h-40 lg:h-auto bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden flex items-end justify-center">
+                          <img
+                            src="/images/savings-wow.png"
+                            alt="Savings"
+                            className="h-full lg:h-[95%] object-contain object-bottom drop-shadow-lg"
+                          />
+                          {/* 말풍선 */}
+                          <div className="absolute top-3 right-3 lg:top-4 lg:right-4 bg-white rounded-2xl rounded-br-sm px-3 py-1.5 shadow-lg border border-slate-100">
+                            <p className="text-[11px] font-black text-emerald-600">
+                              {formatNumber(totalSaved)}{t('won')} 절약!
+                            </p>
                           </div>
                         </div>
                       </div>
