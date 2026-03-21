@@ -375,40 +375,40 @@ export default function AdminDashboardPage() {
 
                   {/* 사진 위에 매출 데이터 오버레이 */}
                   <div className="absolute inset-0 flex flex-col justify-end p-4 lg:p-7">
-                    {/* This Week (먼저 — 주간이 위) */}
+                    {/* This Month (위 — 크게) */}
                     <div className="mb-3 lg:mb-5">
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className="material-symbols-outlined text-blue-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
-                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
-                        <span className="text-[9px] text-white/25 ml-1">{wStart}~{wEnd}</span>
+                        <span className="material-symbols-outlined text-orange-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
+                        <span className="text-[9px] text-white/25 ml-1">{mStart}~{mEnd}</span>
                       </div>
                       <p className="text-2xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">
-                        {formatNumber(Math.round(wRev / 10000))}<span className="text-xs lg:text-base font-semibold text-white/40 ml-1">만원</span>
+                        {formatNumber(Math.round(mRev / 10000))}<span className="text-xs lg:text-base font-semibold text-white/40 ml-1">만원</span>
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-[10px]">
-                        <span className="text-white/40">{wCli}명</span>
-                        <span className="text-emerald-400">+{wNew} new</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
+                        <span className="text-white/40">{mCli}명</span>
+                        <span className="text-emerald-400">+{mNew} new</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
                       </div>
                     </div>
 
                     {/* 구분선 */}
                     <div className="border-t border-white/10 mb-3 lg:mb-5 w-2/3" />
 
-                    {/* This Month (아래) */}
+                    {/* This Week (아래 — 작게) */}
                     <div>
                       <div className="flex items-center gap-1.5 mb-1">
-                        <span className="material-symbols-outlined text-orange-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
-                        <span className="text-[9px] text-white/25 ml-1">{mStart}~{mEnd}</span>
+                        <span className="material-symbols-outlined text-blue-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
+                        <span className="text-[9px] text-white/25 ml-1">{wStart}~{wEnd}</span>
                       </div>
                       <p className="text-xl lg:text-4xl font-black text-white/90 tracking-tight leading-none drop-shadow-lg">
-                        {formatNumber(Math.round(mRev / 10000))}<span className="text-[10px] lg:text-sm font-semibold text-white/30 ml-1">만원</span>
+                        {formatNumber(Math.round(wRev / 10000))}<span className="text-[10px] lg:text-sm font-semibold text-white/30 ml-1">만원</span>
                       </p>
                       <div className="flex items-center gap-2 mt-1 text-[10px]">
-                        <span className="text-white/40">{mCli}명</span>
-                        <span className="text-emerald-400">+{mNew} new</span>
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
+                        <span className="text-white/40">{wCli}명</span>
+                        <span className="text-emerald-400">+{wNew} new</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
                       </div>
                     </div>
                   </div>
@@ -587,54 +587,29 @@ export default function AdminDashboardPage() {
                               <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.08" />
                               <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
                             </linearGradient>
-                            {/* 수채화 필터 */}
-                            <filter id="watercolor" x="-40%" y="-40%" width="180%" height="180%">
-                              <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="blur" />
-                              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
-                              <feDisplacementMap in="blur" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-                              <feComposite in="displaced" in2="SourceGraphic" operator="atop" />
-                            </filter>
-                            <filter id="wcGlow" x="-60%" y="-60%" width="220%" height="220%">
-                              <feGaussianBlur stdDeviation="3" result="glow" />
-                              <feMerge>
-                                <feMergeNode in="glow" />
-                                <feMergeNode in="SourceGraphic" />
-                              </feMerge>
-                            </filter>
                           </defs>
                           {yTicks.map((tick, i) => (
                             i > 0 ? <line key={i} stroke="#f1f5f9" strokeWidth="0.5" x1={padL} x2={W - padR} y1={tick.y} y2={tick.y} /> : null
                           ))}
                           <path fill="url(#chartFill)" d={areaPath} />
                           <path d={curvePath} fill="none" stroke="#8b5cf6" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.2" opacity="0.6" />
-                          {/* 수채화 동그라미 */}
+                          {/* 단순 동그라미 노드 */}
                           {pts.map((p, i) => {
-                            const col = topCatColors[i].color;
                             const isMax = i === maxIdx;
                             const isMin = i === minIdx;
-                            const r = isMax || isMin ? dotR + 2 : dotR;
                             return (
                               <g key={i} className="cursor-pointer"
                                 onMouseEnter={() => setHoveredDot({ idx: i, x: p.x / W * 100, y: p.y / H * 100, label: labels[i], pie: pieDatas[i], total: valuesMan[i] })}>
-                                {/* 수채화 번짐 (glow) */}
-                                <circle cx={p.x} cy={p.y} r={r + 4} fill={col} opacity="0.12" filter="url(#wcGlow)" />
-                                {/* 수채화 메인 원 */}
-                                <circle cx={p.x} cy={p.y} r={r} fill={col} opacity="0.55" filter="url(#watercolor)" />
-                                {/* 중심 하이라이트 */}
-                                <circle cx={p.x - 1} cy={p.y - 1} r={r * 0.35} fill="white" opacity="0.5" />
-                                {/* Peak/Low 표시 */}
-                                {isMax && <>
-                                  <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#ef4444" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
-                                  <text x={p.x} y={p.y - r - 8} textAnchor="middle" fill="#ef4444" fontSize="5.5" fontWeight="700" opacity="0.85">{valuesMan[i]}만</text>
-                                  <text x={p.x} y={p.y - r - 15} textAnchor="middle" fill="#ef4444" fontSize="4.5" fontWeight="800" opacity="0.7">Peak</text>
-                                </>}
-                                {isMin && <>
-                                  <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#3b82f6" strokeWidth="1" strokeDasharray="2 1.5" opacity="0.6" />
-                                  <text x={p.x} y={p.y + r + 12} textAnchor="middle" fill="#3b82f6" fontSize="5.5" fontWeight="700" opacity="0.85">{valuesMan[i]}만</text>
-                                  <text x={p.x} y={p.y + r + 19} textAnchor="middle" fill="#3b82f6" fontSize="4.5" fontWeight="800" opacity="0.7">Low</text>
-                                </>}
+                                <circle cx={p.x} cy={p.y} r="4" fill="#8b5cf6" />
+                                {/* Peak/Low 라벨 */}
+                                {isMax && (
+                                  <text x={p.x} y={p.y - 10} textAnchor="middle" fill="#ef4444" fontSize="5" fontWeight="700">Peak {valuesMan[i]}만</text>
+                                )}
+                                {isMin && (
+                                  <text x={p.x} y={p.y + 14} textAnchor="middle" fill="#3b82f6" fontSize="5" fontWeight="700">Low {valuesMan[i]}만</text>
+                                )}
                                 {/* hit area */}
-                                <circle cx={p.x} cy={p.y} r={r + 6} fill="transparent" />
+                                <circle cx={p.x} cy={p.y} r="12" fill="transparent" />
                               </g>
                             );
                           })}
