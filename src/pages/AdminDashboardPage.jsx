@@ -899,9 +899,10 @@ export default function AdminDashboardPage() {
 
                 {/* At-Risk 5 — 위기 디자인 */}
                 <section className="rounded-xl overflow-hidden border-2 border-red-200 shadow-sm">
-                  {/* 위기 헤더 */}
-                  <div className="bg-gradient-to-r from-red-600 to-rose-500 px-5 py-4">
-                    <div className="flex items-center justify-between">
+                  {/* 위기 헤더 — 사이렌 이미지 */}
+                  <div className="relative bg-gradient-to-r from-red-600 to-rose-500 px-5 py-4 overflow-hidden">
+                    <img src="/images/alert-siren.png" alt="" className="absolute right-3 top-1/2 -translate-y-1/2 h-16 object-contain opacity-30" />
+                    <div className="relative flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
                         <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
                           <span className="material-symbols-outlined text-white text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>emergency</span>
