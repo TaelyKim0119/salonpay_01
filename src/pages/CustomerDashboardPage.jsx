@@ -707,7 +707,7 @@ export default function CustomerDashboardPage() {
 
                   {/* ── Style Pick — 매거진 카드 (반응형) ── */}
                   {trendTip && (
-                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border border-slate-100 bg-white">
+                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border-2 border-pink-400 bg-white ring-2 ring-pink-200 ring-offset-2">
                       {/* 모바일: 세로 레이아웃 / PC: 가로 레이아웃 */}
                       <div className="flex flex-col lg:flex-row">
                         {/* 이미지 영역 */}
