@@ -1140,54 +1140,76 @@ export default function AdminDashboardPage() {
                   ))}
                 </div>
 
-                {/* 쿠폰 타입별 도넛 차트 — 2x2 그리드 */}
-                <div className="grid grid-cols-2 gap-3">
-                  {typeData.slice(0, 4).map(d => {
-                    const color = typeColors[d.type] || '#94a3b8';
-                    const icon = typeIcons[d.type] || 'confirmation_number';
-                    const segs = [
-                      { label: '사용됨', value: d.used, color: statusColors.used },
-                      { label: '진행중', value: d.active, color: statusColors.active },
-                      { label: '만료', value: d.expired, color: statusColors.expired },
-                    ];
-                    const useRate = d.issued > 0 ? Math.round((d.used / d.issued) * 100) : 0;
-                    return (
-                      <div key={d.type} className="p-3 rounded-xl border border-slate-100 bg-slate-50/30">
-                        {/* 타입 이름 */}
-                        <div className="flex items-center justify-center gap-1.5 mb-3">
-                          <span className="material-symbols-outlined text-sm" style={{ color }}>{icon}</span>
-                          <span className="text-[12px] font-bold text-slate-700">{typeLabels[d.type] || d.type}</span>
-                        </div>
-                        {/* 도넛 */}
-                        <div className="relative mx-auto" style={{ width: 96, height: 96 }}>
-                          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                            <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
-                            {donutArcs(segs, 50, 50, 38, 10)}
-                          </svg>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-lg font-black text-slate-800">{d.issued}</span>
-                            <span className="text-[8px] text-slate-400 font-semibold">발행</span>
+                {/* 쿠폰 타입별 카드 — 이미지 + 도넛 */}
+                {(() => {
+                  const typeImages = {
+                    birthday: '/images/coupon-birthday.jpg',
+                    loyalty: '/images/coupon-loyalty.jpg',
+                    special: '/images/coupon-special.jpg',
+                    winback: '/images/coupon-winback.jpg',
+                  };
+                  const typeGradients = {
+                    birthday: 'from-pink-600/80 to-rose-900/70',
+                    loyalty: 'from-amber-700/80 to-yellow-900/70',
+                    special: 'from-emerald-600/80 to-green-900/70',
+                    winback: 'from-violet-600/80 to-indigo-900/70',
+                  };
+                  return (
+                    <div className="grid grid-cols-2 gap-3">
+                      {typeData.slice(0, 4).map(d => {
+                        const color = typeColors[d.type] || '#94a3b8';
+                        const segs = [
+                          { label: '사용됨', value: d.used, color: statusColors.used },
+                          { label: '진행중', value: d.active, color: statusColors.active },
+                          { label: '만료', value: d.expired, color: statusColors.expired },
+                        ];
+                        const curUseRate = d.issued > 0 ? Math.round((d.used / d.issued) * 100) : 0;
+                        const img = typeImages[d.type];
+                        const grad = typeGradients[d.type] || 'from-slate-600/80 to-slate-900/70';
+                        return (
+                          <div key={d.type} className="rounded-xl overflow-hidden border border-slate-100 shadow-sm">
+                            {/* 이미지 헤더 */}
+                            <div className="relative h-24 overflow-hidden">
+                              {img && <img src={img} alt={typeLabels[d.type]} className="absolute inset-0 w-full h-full object-cover" />}
+                              <div className={`absolute inset-0 bg-gradient-to-t ${grad}`} />
+                              <div className="relative z-10 flex flex-col justify-end h-full p-3">
+                                <span className="text-white/70 text-[10px] font-semibold uppercase tracking-wider">Coupon</span>
+                                <span className="text-white text-sm font-bold leading-tight">{typeLabels[d.type] || d.type}</span>
+                              </div>
+                            </div>
+                            {/* 도넛 + 수치 */}
+                            <div className="bg-white p-3">
+                              <div className="relative mx-auto" style={{ width: 80, height: 80 }}>
+                                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                                  <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
+                                  {donutArcs(segs, 50, 50, 38, 10)}
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                  <span className="text-base font-black text-slate-800">{curUseRate}%</span>
+                                  <span className="text-[7px] text-slate-400 font-semibold">사용률</span>
+                                </div>
+                              </div>
+                              <div className="flex justify-between mt-2 px-0.5">
+                                <div className="text-center flex-1">
+                                  <p className="text-[12px] font-black text-emerald-600">{d.used}</p>
+                                  <p className="text-[7px] text-slate-400">사용</p>
+                                </div>
+                                <div className="text-center flex-1">
+                                  <p className="text-[12px] font-black text-blue-600">{d.active}</p>
+                                  <p className="text-[7px] text-slate-400">진행</p>
+                                </div>
+                                <div className="text-center flex-1">
+                                  <p className="text-[12px] font-black text-red-500">{d.expired}</p>
+                                  <p className="text-[7px] text-slate-400">만료</p>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                        {/* 수치 */}
-                        <div className="flex justify-between mt-2.5 px-1">
-                          <div className="text-center">
-                            <p className="text-[13px] font-black text-emerald-600">{d.used}</p>
-                            <p className="text-[8px] text-slate-400">사용</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-[13px] font-black text-blue-600">{d.active}</p>
-                            <p className="text-[8px] text-slate-400">진행</p>
-                          </div>
-                          <div className="text-center">
-                            <p className="text-[13px] font-black text-red-500">{d.expired}</p>
-                            <p className="text-[8px] text-slate-400">만료</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
 
                 {/* 전체 사용률 */}
                 <div className="mt-4 p-3 rounded-xl bg-slate-50 flex items-center justify-between">
