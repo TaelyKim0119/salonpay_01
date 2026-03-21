@@ -901,7 +901,11 @@ export default function CustomerDashboardPage() {
                 <section className="px-6 lg:px-8 pt-4 pb-2">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-lg">campaign</span>
-                    <h3 className="text-slate-900 text-base font-bold">{t('events') || '이벤트'}</h3>
+                    <h3 className="text-slate-900 text-base font-bold">
+                      {currentSalon?.salonName
+                        ? `${currentCustomer.name}님의 단골 ${currentSalon.salonName} 현 이벤트`
+                        : t('events') || '이벤트'}
+                    </h3>
                   </div>
                   <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-3 lg:gap-3">
                     {salonEvents.map(ev => (
