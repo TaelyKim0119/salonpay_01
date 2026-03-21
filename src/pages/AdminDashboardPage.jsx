@@ -671,14 +671,14 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    {/* 최고/최저 매출 — 사진 왼쪽 + 금액 오른쪽 */}
-                    <div className="flex flex-col gap-3 mt-5 pt-5 border-t border-slate-50">
+                    {/* 최고/최저 매출 — 한 행에 나란히 */}
+                    <div className="flex gap-3 mt-5 pt-5 border-t border-slate-50">
                       {/* Peak */}
-                      <div className="flex items-stretch rounded-2xl border border-red-100/60 overflow-hidden bg-white">
-                        <div className="w-20 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center p-2">
+                      <div className="flex-1 flex items-stretch rounded-2xl border border-red-100/60 overflow-hidden bg-white">
+                        <div className="w-16 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center p-1.5">
                           <img src="/images/thumbs-up.png" alt="Peak" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        <div className="flex-1 p-3.5 flex flex-col justify-center">
+                        <div className="flex-1 p-3 flex flex-col justify-center">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Peak</span>
                             <span className="text-[10px] text-red-400/80 font-medium">{labels[maxIdx]}</span>
@@ -694,11 +694,11 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       {/* Low */}
-                      <div className="flex items-stretch rounded-2xl border border-blue-100/60 overflow-hidden bg-white">
-                        <div className="w-20 shrink-0 bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-2">
+                      <div className="flex-1 flex items-stretch rounded-2xl border border-blue-100/60 overflow-hidden bg-white">
+                        <div className="w-16 shrink-0 bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-1.5">
                           <img src="/images/thumbs-down.png" alt="Low" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        <div className="flex-1 p-3.5 flex flex-col justify-center">
+                        <div className="flex-1 p-3 flex flex-col justify-center">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Low</span>
                             <span className="text-[10px] text-blue-400/80 font-medium">{labels[minIdx]}</span>
