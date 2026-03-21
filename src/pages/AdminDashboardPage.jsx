@@ -346,68 +346,69 @@ export default function AdminDashboardPage() {
             const wEnd = `${wEndDate.getMonth() + 1}.${wEndDate.getDate()}`;
 
             return (
-              <section className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-                {/* 이번달 매출 */}
-                <div className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-red-50 rounded-lg">
-                        <span className="material-symbols-outlined text-red-500 text-lg">calendar_month</span>
-                      </div>
-                      <div>
+              <section className="rounded-2xl overflow-hidden shadow-md border border-slate-100">
+                {/* 히어로 이미지 + 오버레이 */}
+                <div className="relative">
+                  <img src="/images/admin-hero.jpg" alt="" className="w-full h-44 lg:h-56 object-cover object-center" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-slate-900/10" />
+                  <div className="absolute top-3 left-4">
+                    <span className="px-2.5 py-1 bg-white/90 backdrop-blur-sm text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full">
+                      {currentSalon?.salonName || 'Salon'} Overview
+                    </span>
+                  </div>
+                </div>
+
+                {/* 이번달 + 이번주 — 카드 2개 겹침 */}
+                <div className="bg-white -mt-12 relative z-10 mx-3 lg:mx-4 rounded-xl shadow-lg border border-slate-100">
+                  <div className="grid grid-cols-2 divide-x divide-slate-100">
+                    {/* This Month */}
+                    <div className="p-4 lg:p-5">
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <span className="material-symbols-outlined text-orange-500 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">This Month</span>
-                        <p className="text-[11px] text-slate-300 font-medium">{mStart} ~ {mEnd}</p>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mb-1">{mStart} ~ {mEnd}</p>
+                      <p className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+                        {formatNumber(Math.round(mRev / 10000))}<span className="text-xs font-bold text-slate-400 ml-0.5">만원</span>
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-0.5"><span className="material-symbols-outlined text-slate-400 text-xs">group</span>{mCli}명</span>
+                        <span className="text-slate-200">·</span>
+                        <span className="flex items-center gap-0.5 text-emerald-500"><span className="material-symbols-outlined text-xs">person_add</span>+{mNew}</span>
+                      </div>
+                      <div className="mt-3 flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: mTop.color + '10' }}>
+                        <span className="material-symbols-outlined text-sm" style={{ color: mTop.color, fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                        <span className="text-[11px] font-bold" style={{ color: mTop.color }}>{mTop.label}</span>
+                        <span className="text-[10px] text-slate-400">{mTopCount}건</span>
                       </div>
                     </div>
-                    <p className="text-2xl lg:text-3xl font-extrabold text-slate-900">{formatNumber(Math.round(mRev / 10000))}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mb-3">
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-slate-400 text-sm">group</span>{mCli}명</span>
-                    <span className="text-slate-200">·</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-emerald-400 text-sm">person_add</span>신규 {mNew}명</span>
-                  </div>
-                  {/* Best Seller 강조 */}
-                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg" style={{ backgroundColor: mTop.color + '12' }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: mTop.color + '25' }}>
-                      <span className="material-symbols-outlined text-base" style={{ color: mTop.color }}>local_fire_department</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Best Seller</p>
-                      <p className="text-sm font-extrabold" style={{ color: mTop.color }}>{mTop.label} <span className="text-slate-500 font-semibold text-xs">{mTopCount}건</span></p>
+
+                    {/* This Week */}
+                    <div className="p-4 lg:p-5">
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <span className="material-symbols-outlined text-blue-500 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">This Week</span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mb-1">{wStart} ~ {wEnd}</p>
+                      <p className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
+                        {formatNumber(Math.round(wRev / 10000))}<span className="text-xs font-bold text-slate-400 ml-0.5">만원</span>
+                      </p>
+                      <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-500">
+                        <span className="flex items-center gap-0.5"><span className="material-symbols-outlined text-slate-400 text-xs">group</span>{wCli}명</span>
+                        <span className="text-slate-200">·</span>
+                        <span className="flex items-center gap-0.5 text-emerald-500"><span className="material-symbols-outlined text-xs">person_add</span>+{wNew}</span>
+                      </div>
+                      <div className="mt-3 flex items-center gap-2 px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: wTop.color + '10' }}>
+                        <span className="material-symbols-outlined text-sm" style={{ color: wTop.color, fontVariationSettings: "'FILL' 1" }}>local_fire_department</span>
+                        <span className="text-[11px] font-bold" style={{ color: wTop.color }}>{wTop.label}</span>
+                        <span className="text-[10px] text-slate-400">{wTopCount}건</span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* 이번주 매출 */}
-                <div className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="p-1.5 bg-blue-50 rounded-lg">
-                        <span className="material-symbols-outlined text-blue-500 text-lg">date_range</span>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">This Week</span>
-                        <p className="text-[11px] text-slate-300 font-medium">{wStart} ~ {wEnd}</p>
-                      </div>
-                    </div>
-                    <p className="text-2xl lg:text-3xl font-extrabold text-slate-900">{formatNumber(Math.round(wRev / 10000))}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-slate-500 mb-3">
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-slate-400 text-sm">group</span>{wCli}명</span>
-                    <span className="text-slate-200">·</span>
-                    <span className="flex items-center gap-1"><span className="material-symbols-outlined text-emerald-400 text-sm">person_add</span>신규 {wNew}명</span>
-                  </div>
-                  {/* Best Seller 강조 */}
-                  <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg" style={{ backgroundColor: wTop.color + '12' }}>
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: wTop.color + '25' }}>
-                      <span className="material-symbols-outlined text-base" style={{ color: wTop.color }}>local_fire_department</span>
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Best Seller</p>
-                      <p className="text-sm font-extrabold" style={{ color: wTop.color }}>{wTop.label} <span className="text-slate-500 font-semibold text-xs">{wTopCount}건</span></p>
-                    </div>
-                  </div>
-                </div>
+                {/* 하단 여백 */}
+                <div className="h-4 bg-white" />
               </section>
             );
           })()}
