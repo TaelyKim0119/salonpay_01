@@ -44,6 +44,8 @@ export default function CustomerDetailPage() {
   }
 
   const firstLetter = (customer.name || '?').charAt(0).toUpperCase();
+  const customerPhotoIdx = ((customerId || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0) % 5) + 1;
+  const customerPhoto = `/images/customer-${customerPhotoIdx}.png`;
   const totalDays = customer.createdAt
     ? Math.floor((Date.now() - new Date(customer.createdAt).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
@@ -81,8 +83,8 @@ export default function CustomerDetailPage() {
           <div className="flex w-full flex-col gap-4 items-center">
             <div className="flex gap-4 flex-col lg:flex-row items-center">
               <div className="relative">
-                <div className="bg-gradient-to-br from-accent to-rose-accent rounded-full min-h-24 w-24 border-4 border-white shadow-lg flex items-center justify-center text-white text-3xl font-bold">
-                  {firstLetter}
+                <div className="rounded-full min-h-24 w-24 border-4 border-white shadow-lg overflow-hidden">
+                  <img src={customerPhoto} alt={customer.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="absolute bottom-0 right-0 bg-accent p-1.5 rounded-full border-2 border-white">
                   <span className="material-symbols-outlined text-white text-sm block">verified</span>

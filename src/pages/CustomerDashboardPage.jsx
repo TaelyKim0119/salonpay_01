@@ -258,29 +258,12 @@ function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
                     {isFirst && (
                       <>
                         {/* Vertical line to axis */}
-                        <line x1={cx} y1={dotCy} x2={cx} y2={baseY} stroke={visit.category.color} strokeWidth="0.4" strokeDasharray="2 2" opacity="0.3" />
-                        {/* Outer glow ring */}
-                        <circle cx={cx} cy={dotCy} r="5" fill={visit.category.color} opacity="0.08" />
-                        {/* Main dot */}
-                        <circle cx={cx} cy={dotCy} r="3.2" fill="white" stroke={visit.category.color} strokeWidth="1.5" filter="url(#dotShadow)" />
-                        <circle cx={cx} cy={dotCy} r="1.5" fill={visit.category.color} />
-                        {/* Latest visit - pulsing ring */}
-                        {isLatest && (
-                          <>
-                            <circle cx={cx} cy={dotCy} r="6" fill="none" stroke={visit.category.color} strokeWidth="0.6" opacity="0.4">
-                              <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
-                            </circle>
-                            {/* Camera icon hint for latest */}
-                            <g transform={`translate(${cx + 6}, ${dotCy - 6})`}>
-                              <circle r="4" fill="white" stroke="#94a3b8" strokeWidth="0.4" />
-                              <text textAnchor="middle" y="2" fill="#64748b" fontSize="4.5" fontFamily="Material Symbols Outlined">📷</text>
-                            </g>
-                          </>
-                        )}
+                        <line x1={cx} y1={dotCy} x2={cx} y2={baseY} stroke="#e2e8f0" strokeWidth="0.5" />
+                        {/* Main dot - uniform small circle */}
+                        <circle cx={cx} cy={dotCy} r="3" fill="#f490b1" />
                         {/* Spend label */}
                         {spend > 0 && (
-                          <text x={cx} y={dotCy - 8} textAnchor="middle" fill="#64748b" fontSize="4.5" fontWeight="600" fontFamily="Manrope, sans-serif">
+                          <text x={cx} y={dotCy - 6} textAnchor="middle" fill="#64748b" fontSize="4.5" fontWeight="600" fontFamily="Manrope, sans-serif">
                             {Math.round(spend / 10000)}만
                           </text>
                         )}

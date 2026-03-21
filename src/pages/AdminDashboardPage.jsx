@@ -362,57 +362,53 @@ export default function AdminDashboardPage() {
             return (
               <section className="rounded-2xl overflow-hidden shadow-md border border-slate-100 relative">
                 {/* 배경 이미지 — PC: 전체 배경 / 모바일: 상단 */}
-                <div className="relative w-full aspect-[16/7] lg:aspect-[21/9] overflow-hidden">
-                  <img src="/images/admin-hero.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/60 to-slate-900/30" />
+                <div className="relative w-full overflow-hidden">
+                  <img src="/images/admin-hero.jpg" alt="" className="w-full h-auto min-h-[200px] lg:min-h-[240px] object-cover object-center" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/70 to-slate-900/40" />
 
                   {/* 살롱 이름 뱃지 */}
                   <div className="absolute top-3 right-3 lg:top-4 lg:right-5">
-                    <span className="px-3 py-1.5 bg-white/15 backdrop-blur-md text-[10px] font-bold text-white/90 uppercase tracking-widest rounded-full border border-white/20">
+                    <span className="px-2.5 py-1 bg-white/15 backdrop-blur-md text-[9px] font-bold text-white/90 uppercase tracking-widest rounded-full border border-white/20">
                       {currentSalon?.salonName || 'Salon'}
                     </span>
                   </div>
 
                   {/* 사진 위에 매출 데이터 오버레이 */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-7">
+                  <div className="absolute inset-0 flex flex-col justify-end p-4 lg:p-7">
                     {/* This Week (먼저 — 주간이 위) */}
-                    <div className="mb-4 lg:mb-5">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="material-symbols-outlined text-blue-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
-                        <span className="text-[10px] text-white/25 ml-1">{wStart} ~ {wEnd}</span>
+                    <div className="mb-3 lg:mb-5">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="material-symbols-outlined text-blue-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
+                        <span className="text-[9px] text-white/25 ml-1">{wStart}~{wEnd}</span>
                       </div>
-                      <div className="flex items-baseline gap-3">
-                        <p className="text-3xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">
-                          {formatNumber(Math.round(wRev / 10000))}<span className="text-sm lg:text-base font-semibold text-white/40 ml-1">만원</span>
-                        </p>
-                        <div className="flex items-center gap-2 text-[11px]">
-                          <span className="text-white/40">{wCli}명</span>
-                          <span className="text-emerald-400">+{wNew} new</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
-                        </div>
+                      <p className="text-2xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">
+                        {formatNumber(Math.round(wRev / 10000))}<span className="text-xs lg:text-base font-semibold text-white/40 ml-1">만원</span>
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 text-[10px]">
+                        <span className="text-white/40">{wCli}명</span>
+                        <span className="text-emerald-400">+{wNew} new</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
                       </div>
                     </div>
 
                     {/* 구분선 */}
-                    <div className="border-t border-white/10 mb-4 lg:mb-5 w-2/3" />
+                    <div className="border-t border-white/10 mb-3 lg:mb-5 w-2/3" />
 
                     {/* This Month (아래) */}
                     <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <span className="material-symbols-outlined text-orange-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
-                        <span className="text-[10px] text-white/25 ml-1">{mStart} ~ {mEnd}</span>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="material-symbols-outlined text-orange-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
+                        <span className="text-[9px] text-white/25 ml-1">{mStart}~{mEnd}</span>
                       </div>
-                      <div className="flex items-baseline gap-3">
-                        <p className="text-2xl lg:text-4xl font-black text-white/90 tracking-tight leading-none drop-shadow-lg">
-                          {formatNumber(Math.round(mRev / 10000))}<span className="text-xs lg:text-sm font-semibold text-white/30 ml-1">만원</span>
-                        </p>
-                        <div className="flex items-center gap-2 text-[11px]">
-                          <span className="text-white/40">{mCli}명</span>
-                          <span className="text-emerald-400">+{mNew} new</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
-                        </div>
+                      <p className="text-xl lg:text-4xl font-black text-white/90 tracking-tight leading-none drop-shadow-lg">
+                        {formatNumber(Math.round(mRev / 10000))}<span className="text-[10px] lg:text-sm font-semibold text-white/30 ml-1">만원</span>
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 text-[10px]">
+                        <span className="text-white/40">{mCli}명</span>
+                        <span className="text-emerald-400">+{mNew} new</span>
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
                       </div>
                     </div>
                   </div>
@@ -685,44 +681,44 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    {/* 최고/최저 매출 — 한 행에 나란히 */}
-                    <div className="flex gap-3 mt-5 pt-5 border-t border-slate-50">
+                    {/* 최고/최저 매출 */}
+                    <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 mt-5 pt-5 border-t border-slate-50">
                       {/* Peak */}
-                      <div className="flex-1 flex items-stretch rounded-2xl border border-red-100/60 overflow-hidden bg-white">
-                        <div className="w-16 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center p-1.5">
+                      <div className="flex-1 flex items-center rounded-2xl border border-red-100/60 overflow-hidden bg-white">
+                        <div className="w-14 sm:w-16 shrink-0 self-stretch bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center p-1.5">
                           <img src="/images/thumbs-up.png" alt="Peak" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        <div className="flex-1 p-3 flex flex-col justify-center">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Peak</span>
+                        <div className="flex-1 p-2.5 sm:p-3 flex flex-col justify-center min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="px-1.5 py-0.5 bg-red-500 text-white text-[8px] font-black uppercase tracking-wider rounded-full">Peak</span>
                             <span className="text-[10px] text-red-400/80 font-medium">{labels[maxIdx]}</span>
                           </div>
-                          <p className="text-2xl font-black text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                          <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-xs sm:text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
                           {topCatColors[maxIdx] && (
-                            <div className="flex items-center gap-1.5 mt-1">
+                            <div className="flex items-center gap-1 mt-0.5">
                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[maxIdx].color }} />
-                              <span className="text-[11px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
-                              <span className="text-[11px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
+                              <span className="text-[10px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
+                              <span className="text-[10px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
                             </div>
                           )}
                         </div>
                       </div>
                       {/* Low */}
-                      <div className="flex-1 flex items-stretch rounded-2xl border border-blue-100/60 overflow-hidden bg-white">
-                        <div className="w-16 shrink-0 bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-1.5">
+                      <div className="flex-1 flex items-center rounded-2xl border border-blue-100/60 overflow-hidden bg-white">
+                        <div className="w-14 sm:w-16 shrink-0 self-stretch bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-1.5">
                           <img src="/images/thumbs-down.png" alt="Low" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        <div className="flex-1 p-3 flex flex-col justify-center">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Low</span>
+                        <div className="flex-1 p-2.5 sm:p-3 flex flex-col justify-center min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="px-1.5 py-0.5 bg-blue-500 text-white text-[8px] font-black uppercase tracking-wider rounded-full">Low</span>
                             <span className="text-[10px] text-blue-400/80 font-medium">{labels[minIdx]}</span>
                           </div>
-                          <p className="text-2xl font-black text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                          <p className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-xs sm:text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
                           {topCatColors[minIdx] && (
-                            <div className="flex items-center gap-1.5 mt-1">
+                            <div className="flex items-center gap-1 mt-0.5">
                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[minIdx].color }} />
-                              <span className="text-[11px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
-                              <span className="text-[11px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
+                              <span className="text-[10px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
+                              <span className="text-[10px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
                             </div>
                           )}
                         </div>
@@ -881,7 +877,7 @@ export default function AdminDashboardPage() {
               .slice(0, 5);
 
             return (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
+              <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-5">
                 {/* Top 5 */}
                 <section className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
                   <div className="flex items-center gap-2 mb-4">
@@ -964,7 +960,7 @@ export default function AdminDashboardPage() {
                             {c.reasons.map((r, ri) => (
                               <div key={ri} className="flex items-center gap-2 py-1">
                                 <span className="material-symbols-outlined text-sm" style={{ color: r.severity === 'high' ? '#ef4444' : r.severity === 'mid' ? '#f59e0b' : '#94a3b8' }}>{r.icon}</span>
-                                <span className="text-[11px] text-slate-600">{r.text}</span>
+                                <span className="text-[10px] lg:text-[11px] text-slate-600 break-keep">{r.text}</span>
                               </div>
                             ))}
                           </div>
@@ -978,7 +974,7 @@ export default function AdminDashboardPage() {
                                   className="flex items-center gap-2 w-full mt-1 px-3 py-2 bg-accent/5 border border-accent/15 rounded-lg hover:bg-accent/10 transition-colors text-left"
                                 >
                                   <span className="material-symbols-outlined text-accent text-sm">{cp.icon}</span>
-                                  <span className="text-[11px] font-semibold text-accent flex-1">{cp.text}</span>
+                                  <span className="text-[10px] lg:text-[11px] font-semibold text-accent flex-1">{cp.text}</span>
                                   <span className="material-symbols-outlined text-accent/50 text-sm">arrow_forward</span>
                                 </button>
                               ))}
@@ -1543,7 +1539,7 @@ export default function AdminDashboardPage() {
               return (
                 <div className="rounded-2xl overflow-hidden shadow-md border border-slate-100">
                   {/* 헤더 — 전구 사진 배경 (온전히 표시) */}
-                  <div className="relative w-full aspect-[16/9] lg:aspect-[21/9] overflow-hidden">
+                  <div className="relative w-full aspect-[2/1] lg:aspect-[21/9] overflow-hidden">
                     <img src="/images/insights-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 px-5 lg:px-6 pb-4 lg:pb-5">
