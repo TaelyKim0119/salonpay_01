@@ -1079,17 +1079,18 @@ export default function AdminDashboardPage() {
             const expiredAll = allCoupons.filter(c => !c.isUsed && c.expiryDate < todayStr).length;
             const useRate = totalAll > 0 ? Math.round((usedAll / totalAll) * 100) : 0;
 
-            // 타입별 집계
+            // 타입별 집계 (사용/만료/진행중)
             const typeMap = {};
             allCoupons.forEach(c => {
-              if (!typeMap[c.type]) typeMap[c.type] = { issued: 0, used: 0 };
+              if (!typeMap[c.type]) typeMap[c.type] = { issued: 0, used: 0, expired: 0, active: 0 };
               typeMap[c.type].issued++;
               if (c.isUsed) typeMap[c.type].used++;
+              else if (c.expiryDate < todayStr) typeMap[c.type].expired++;
+              else typeMap[c.type].active++;
             });
             const typeData = Object.entries(typeMap)
-              .map(([type, s]) => ({ type, ...s, rate: s.issued > 0 ? Math.round((s.used / s.issued) * 100) : 0 }))
+              .map(([type, s]) => ({ type, ...s }))
               .sort((a, b) => b.issued - a.issued);
-            const maxIssued = Math.max(...typeData.map(d => d.issued), 1);
 
             // 도넛 아크 생성 함수
             const donutArcs = (segments, cx, cy, r, strokeW) => {
@@ -1113,31 +1114,8 @@ export default function AdminDashboardPage() {
               });
             };
 
-            // 4분면 데이터 준비
-            // 1) 상태별 도넛
-            const statusSegs = [
-              { label: '사용됨', value: usedAll, color: '#10b981' },
-              { label: '진행중', value: activeAll, color: '#3b82f6' },
-              { label: '만료', value: expiredAll, color: '#ef4444' },
-            ];
-            // 2) 타입별 발행 도넛
-            const typeSegs = typeData.map(d => ({
-              label: typeLabels[d.type] || d.type,
-              value: d.issued,
-              color: typeColors[d.type] || '#94a3b8',
-              icon: typeIcons[d.type] || 'confirmation_number',
-            }));
-            // 3) 타입별 사용률 도넛
-            const rateSegs = typeData.map(d => ({
-              label: typeLabels[d.type] || d.type,
-              value: d.used || 0,
-              color: typeColors[d.type] || '#94a3b8',
-            }));
-            // 4) 미사용 vs 사용 도넛
-            const convSegs = [
-              { label: '사용', value: usedAll, color: '#10b981' },
-              { label: '미사용', value: totalAll - usedAll, color: '#e2e8f0' },
-            ];
+            const statusColors = { used: '#10b981', active: '#3b82f6', expired: '#ef4444' };
+            const statusLabels = { used: '사용됨', active: '진행중', expired: '만료' };
 
             return (
               <section id="chart-coupon-src" className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
@@ -1152,96 +1130,73 @@ export default function AdminDashboardPage() {
                   </button>
                 </div>
 
-                {/* 4분면 도넛 차트 */}
+                {/* 범례 */}
+                <div className="flex justify-center gap-5 mb-4">
+                  {Object.entries(statusLabels).map(([key, label]) => (
+                    <div key={key} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: statusColors[key] }} />
+                      <span className="text-[11px] text-slate-500 font-medium">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 쿠폰 타입별 도넛 차트 — 2x2 그리드 */}
                 <div className="grid grid-cols-2 gap-3">
-                  {/* Q1: 전체 현황 */}
-                  <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">현황</p>
-                    <div className="relative mx-auto" style={{ width: 100, height: 100 }}>
-                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
-                        {donutArcs(statusSegs, 50, 50, 38, 10)}
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-black text-slate-800">{totalAll}</span>
-                        <span className="text-[8px] text-slate-400 font-semibold">총 발행</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-center gap-3 mt-2">
-                      {statusSegs.map((s, i) => (
-                        <div key={i} className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                          <span className="text-[9px] text-slate-500">{s.value}</span>
+                  {typeData.slice(0, 4).map(d => {
+                    const color = typeColors[d.type] || '#94a3b8';
+                    const icon = typeIcons[d.type] || 'confirmation_number';
+                    const segs = [
+                      { label: '사용됨', value: d.used, color: statusColors.used },
+                      { label: '진행중', value: d.active, color: statusColors.active },
+                      { label: '만료', value: d.expired, color: statusColors.expired },
+                    ];
+                    const useRate = d.issued > 0 ? Math.round((d.used / d.issued) * 100) : 0;
+                    return (
+                      <div key={d.type} className="p-3 rounded-xl border border-slate-100 bg-slate-50/30">
+                        {/* 타입 이름 */}
+                        <div className="flex items-center justify-center gap-1.5 mb-3">
+                          <span className="material-symbols-outlined text-sm" style={{ color }}>{icon}</span>
+                          <span className="text-[12px] font-bold text-slate-700">{typeLabels[d.type] || d.type}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Q2: 사용률 */}
-                  <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">사용률</p>
-                    <div className="relative mx-auto" style={{ width: 100, height: 100 }}>
-                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
-                        {donutArcs(convSegs, 50, 50, 38, 10)}
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-black" style={{ color: useRate >= 60 ? '#10b981' : useRate >= 30 ? '#3b82f6' : '#f59e0b' }}>{useRate}%</span>
-                        <span className="text-[8px] text-slate-400 font-semibold">전환율</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-center gap-3 mt-2">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="text-[9px] text-slate-500">{usedAll}장 사용</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Q3: 타입별 발행 */}
-                  <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">타입별 발행</p>
-                    <div className="relative mx-auto" style={{ width: 100, height: 100 }}>
-                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
-                        {donutArcs(typeSegs, 50, 50, 38, 10)}
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-black text-slate-800">{typeData.length}</span>
-                        <span className="text-[8px] text-slate-400 font-semibold">종류</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-2">
-                      {typeSegs.map((s, i) => (
-                        <div key={i} className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                          <span className="text-[9px] text-slate-500">{s.label}</span>
+                        {/* 도넛 */}
+                        <div className="relative mx-auto" style={{ width: 96, height: 96 }}>
+                          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                            <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
+                            {donutArcs(segs, 50, 50, 38, 10)}
+                          </svg>
+                          <div className="absolute inset-0 flex flex-col items-center justify-center">
+                            <span className="text-lg font-black text-slate-800">{d.issued}</span>
+                            <span className="text-[8px] text-slate-400 font-semibold">발행</span>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Q4: 타입별 사용 */}
-                  <div className="p-3 rounded-xl border border-slate-100 bg-slate-50/50">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3 text-center">타입별 사용</p>
-                    <div className="relative mx-auto" style={{ width: 100, height: 100 }}>
-                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="10" />
-                        {donutArcs(rateSegs.filter(s => s.value > 0).length > 0 ? rateSegs : [{ label: '-', value: 1, color: '#e2e8f0' }], 50, 50, 38, 10)}
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-lg font-black text-slate-800">{usedAll}</span>
-                        <span className="text-[8px] text-slate-400 font-semibold">사용됨</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-2">
-                      {typeData.filter(d => d.used > 0).map((d, i) => (
-                        <div key={i} className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: typeColors[d.type] }} />
-                          <span className="text-[9px] text-slate-500">{d.rate}%</span>
+                        {/* 수치 */}
+                        <div className="flex justify-between mt-2.5 px-1">
+                          <div className="text-center">
+                            <p className="text-[13px] font-black text-emerald-600">{d.used}</p>
+                            <p className="text-[8px] text-slate-400">사용</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[13px] font-black text-blue-600">{d.active}</p>
+                            <p className="text-[8px] text-slate-400">진행</p>
+                          </div>
+                          <div className="text-center">
+                            <p className="text-[13px] font-black text-red-500">{d.expired}</p>
+                            <p className="text-[8px] text-slate-400">만료</p>
+                          </div>
                         </div>
-                      ))}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* 전체 사용률 */}
+                <div className="mt-4 p-3 rounded-xl bg-slate-50 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-500 font-medium">전체 사용률</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div className="h-full rounded-full" style={{ width: `${useRate}%`, backgroundColor: useRate >= 60 ? '#10b981' : useRate >= 30 ? '#3b82f6' : '#f59e0b' }} />
                     </div>
+                    <span className="text-sm font-black text-slate-800">{useRate}%</span>
                   </div>
                 </div>
               </section>
