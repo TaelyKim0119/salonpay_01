@@ -1535,18 +1535,18 @@ export default function AdminDashboardPage() {
 
               return (
                 <div className="rounded-2xl overflow-hidden shadow-md border border-slate-100">
-                  {/* 헤더 — 전구 사진 배경 */}
-                  <div className="relative h-28 lg:h-32 overflow-hidden">
-                    <img src="/images/insights-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/40" />
-                    <div className="absolute inset-0 flex items-center px-5 lg:px-6">
-                      <div>
-                        <p className="text-amber-300/80 text-[10px] font-bold uppercase tracking-widest mb-1">Data-driven</p>
-                        <h2 className="text-white text-lg lg:text-xl font-black tracking-tight">Weekly Insights</h2>
-                        <p className="text-white/40 text-[11px] mt-0.5">이번 주 살롱 데이터 분석 리포트</p>
-                      </div>
-                      <div className="ml-auto text-right">
-                        <p className="text-white/30 text-[10px]">{insights.length}개 인사이트</p>
+                  {/* 헤더 — 전구 사진 배경 (온전히 표시) */}
+                  <div className="relative w-full aspect-[16/9] lg:aspect-[21/9] overflow-hidden">
+                    <img src="/images/insights-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/30 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 px-5 lg:px-6 pb-4 lg:pb-5">
+                      <p className="text-amber-300 text-[10px] font-bold uppercase tracking-widest mb-1">Data-driven</p>
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <h2 className="text-white text-xl lg:text-2xl font-black tracking-tight drop-shadow-lg">Weekly Insights</h2>
+                          <p className="text-white/50 text-[11px] mt-0.5">이번 주 살롱 데이터 분석 리포트</p>
+                        </div>
+                        <span className="text-white/30 text-[10px] bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full">{insights.length}개 인사이트</span>
                       </div>
                     </div>
                   </div>
@@ -1577,11 +1577,13 @@ export default function AdminDashboardPage() {
                         {ins.couponText && (
                           <button
                             onClick={() => navigate('/admin/coupons')}
-                            className="flex items-center gap-2 w-full px-4 py-2.5 bg-slate-50 border-t border-slate-100 hover:bg-slate-100 transition-colors text-left group"
+                            className="flex items-center gap-2.5 w-full px-4 py-3 bg-amber-50 border-t-2 border-dashed border-amber-200 hover:bg-amber-100 transition-colors text-left group"
                           >
-                            <span className="material-symbols-outlined text-amber-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{ins.couponIcon}</span>
-                            <span className="text-[11px] font-semibold text-slate-600 flex-1">{ins.couponText}</span>
-                            <span className="material-symbols-outlined text-slate-300 text-sm group-hover:text-slate-500 transition-colors">chevron_right</span>
+                            <div className="shrink-0 size-7 rounded-lg bg-amber-400 flex items-center justify-center shadow-sm">
+                              <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{ins.couponIcon}</span>
+                            </div>
+                            <span className="text-[12px] font-bold text-amber-800 flex-1">{ins.couponText}</span>
+                            <span className="material-symbols-outlined text-amber-400 text-lg group-hover:translate-x-0.5 transition-transform">arrow_forward</span>
                           </button>
                         )}
                       </div>
