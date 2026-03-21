@@ -361,21 +361,21 @@ export default function AdminDashboardPage() {
 
                   {/* 사진 위에 매출 데이터 오버레이 */}
                   <div className="absolute inset-0 flex flex-col justify-end p-5 lg:p-7">
-                    {/* This Month */}
+                    {/* This Week (먼저 — 주간이 위) */}
                     <div className="mb-4 lg:mb-5">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="material-symbols-outlined text-orange-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
-                        <span className="text-[10px] text-white/25 ml-1">{mStart} ~ {mEnd}</span>
+                        <span className="material-symbols-outlined text-blue-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
+                        <span className="text-[10px] text-white/25 ml-1">{wStart} ~ {wEnd}</span>
                       </div>
                       <div className="flex items-baseline gap-3">
                         <p className="text-3xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">
-                          {formatNumber(Math.round(mRev / 10000))}<span className="text-sm lg:text-base font-semibold text-white/40 ml-1">만원</span>
+                          {formatNumber(Math.round(wRev / 10000))}<span className="text-sm lg:text-base font-semibold text-white/40 ml-1">만원</span>
                         </p>
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="text-white/40">{mCli}명</span>
-                          <span className="text-emerald-400">+{mNew} new</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
+                          <span className="text-white/40">{wCli}명</span>
+                          <span className="text-emerald-400">+{wNew} new</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
                         </div>
                       </div>
                     </div>
@@ -383,21 +383,21 @@ export default function AdminDashboardPage() {
                     {/* 구분선 */}
                     <div className="border-t border-white/10 mb-4 lg:mb-5 w-2/3" />
 
-                    {/* This Week */}
+                    {/* This Month (아래) */}
                     <div>
                       <div className="flex items-center gap-2 mb-1.5">
-                        <span className="material-symbols-outlined text-blue-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
-                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
-                        <span className="text-[10px] text-white/25 ml-1">{wStart} ~ {wEnd}</span>
+                        <span className="material-symbols-outlined text-orange-400 text-base" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                        <span className="text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
+                        <span className="text-[10px] text-white/25 ml-1">{mStart} ~ {mEnd}</span>
                       </div>
                       <div className="flex items-baseline gap-3">
                         <p className="text-2xl lg:text-4xl font-black text-white/90 tracking-tight leading-none drop-shadow-lg">
-                          {formatNumber(Math.round(wRev / 10000))}<span className="text-xs lg:text-sm font-semibold text-white/30 ml-1">만원</span>
+                          {formatNumber(Math.round(mRev / 10000))}<span className="text-xs lg:text-sm font-semibold text-white/30 ml-1">만원</span>
                         </p>
                         <div className="flex items-center gap-2 text-[11px]">
-                          <span className="text-white/40">{wCli}명</span>
-                          <span className="text-emerald-400">+{wNew} new</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: wTop.color + '30', color: wTop.color }}>{wTop.label} {wTopCount}건</span>
+                          <span className="text-white/40">{mCli}명</span>
+                          <span className="text-emerald-400">+{mNew} new</span>
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold" style={{ backgroundColor: mTop.color + '30', color: mTop.color }}>{mTop.label} {mTopCount}건</span>
                         </div>
                       </div>
                     </div>
@@ -671,25 +671,21 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    {/* 최고/최저 매출 인사이트 — 이미지 카드 */}
-                    <div className="flex gap-3 mt-5 pt-5 border-t border-slate-50">
+                    {/* 최고/최저 매출 — 사진 왼쪽 + 금액 오른쪽 */}
+                    <div className="flex flex-col gap-3 mt-5 pt-5 border-t border-slate-50">
                       {/* Peak */}
-                      <div className="flex-1 relative overflow-hidden rounded-2xl border border-red-100/60">
-                        {/* 상단 이미지 */}
-                        <div className="relative h-24 bg-gradient-to-br from-rose-50 to-amber-50 overflow-hidden flex items-end justify-center">
-                          <img src="/images/thumbs-up.png" alt="Peak" className="h-[110%] object-contain object-bottom drop-shadow-md" />
-                          <div className="absolute top-2 left-2">
-                            <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">Peak</span>
-                          </div>
-                          <div className="absolute top-2 right-2">
-                            <span className="text-[10px] text-red-400/80 font-medium bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded">{labels[maxIdx]}</span>
-                          </div>
+                      <div className="flex items-stretch rounded-2xl border border-red-100/60 overflow-hidden bg-white">
+                        <div className="w-20 shrink-0 bg-gradient-to-br from-rose-50 to-amber-50 flex items-center justify-center p-2">
+                          <img src="/images/thumbs-up.png" alt="Peak" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        {/* 하단 데이터 */}
-                        <div className="bg-white p-3">
-                          <p className="text-xl font-black text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                        <div className="flex-1 p-3.5 flex flex-col justify-center">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 bg-red-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Peak</span>
+                            <span className="text-[10px] text-red-400/80 font-medium">{labels[maxIdx]}</span>
+                          </div>
+                          <p className="text-2xl font-black text-slate-900 tracking-tight">{valuesMan[maxIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
                           {topCatColors[maxIdx] && (
-                            <div className="flex items-center gap-1.5 mt-1.5">
+                            <div className="flex items-center gap-1.5 mt-1">
                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[maxIdx].color }} />
                               <span className="text-[11px] font-semibold text-slate-600">{topCatColors[maxIdx].label}</span>
                               <span className="text-[11px] text-slate-400">{Math.round(topCatColors[maxIdx].value / 10000)}만</span>
@@ -698,22 +694,18 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                       {/* Low */}
-                      <div className="flex-1 relative overflow-hidden rounded-2xl border border-blue-100/60">
-                        {/* 상단 이미지 */}
-                        <div className="relative h-24 bg-gradient-to-br from-blue-50 to-slate-50 overflow-hidden flex items-end justify-center">
-                          <img src="/images/thumbs-down.png" alt="Low" className="h-[110%] object-contain object-bottom drop-shadow-md" />
-                          <div className="absolute top-2 left-2">
-                            <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm">Low</span>
-                          </div>
-                          <div className="absolute top-2 right-2">
-                            <span className="text-[10px] text-blue-400/80 font-medium bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded">{labels[minIdx]}</span>
-                          </div>
+                      <div className="flex items-stretch rounded-2xl border border-blue-100/60 overflow-hidden bg-white">
+                        <div className="w-20 shrink-0 bg-gradient-to-br from-blue-50 to-slate-50 flex items-center justify-center p-2">
+                          <img src="/images/thumbs-down.png" alt="Low" className="w-full h-full object-contain drop-shadow-md" />
                         </div>
-                        {/* 하단 데이터 */}
-                        <div className="bg-white p-3">
-                          <p className="text-xl font-black text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
+                        <div className="flex-1 p-3.5 flex flex-col justify-center">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 bg-blue-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Low</span>
+                            <span className="text-[10px] text-blue-400/80 font-medium">{labels[minIdx]}</span>
+                          </div>
+                          <p className="text-2xl font-black text-slate-900 tracking-tight">{valuesMan[minIdx]}<span className="text-sm font-bold text-slate-400 ml-0.5">만원</span></p>
                           {topCatColors[minIdx] && (
-                            <div className="flex items-center gap-1.5 mt-1.5">
+                            <div className="flex items-center gap-1.5 mt-1">
                               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: topCatColors[minIdx].color }} />
                               <span className="text-[11px] font-semibold text-slate-600">{topCatColors[minIdx].label}</span>
                               <span className="text-[11px] text-slate-400">{Math.round(topCatColors[minIdx].value / 10000)}만</span>
