@@ -462,6 +462,8 @@ export default function CustomerDashboardPage() {
   const [allVisits, setAllVisits] = useState([]);
   const [coupons, setCoupons] = useState([]);
   const [salonEvents, setSalonEvents] = useState([]);
+  const [cashDiscountRate, setCashDiscountRate] = useState(null);
+  const [pointEarnRate, setPointEarnRate] = useState(null);
   const [activeTab, setActiveTab] = useState('home');
   const [chartYear, setChartYear] = useState(new Date().getFullYear());
   const [selectedDot, setSelectedDot] = useState(null); // { visit, month }
@@ -481,6 +483,12 @@ export default function CustomerDashboardPage() {
       setAllVisits(customerVisits);
       const activeCoupons = await sheetsDB.getActiveCouponsByCustomerId(currentCustomer.id);
       setCoupons(activeCoupons);
+      // Load settings (cash discount / point earn rate)
+      try {
+        const settings = await sheetsDB.getSettings();
+        setCashDiscountRate(settings.cashDiscountRate ?? settings.CASH_DISCOUNT_RATE ?? 10);
+        setPointEarnRate(settings.pointEarnRate ?? settings.POINT_EARN_RATE ?? 5);
+      } catch { /* use defaults below */ }
       // Demo salon events
       if (sheetsDB.isDemoMode) {
         setSalonEvents([
@@ -896,8 +904,8 @@ export default function CustomerDashboardPage() {
                 </section>
               )}
 
-              {/* ── Salon Events ── */}
-              {salonEvents.length > 0 && (
+              {/* ── Salon Events + Benefits ── */}
+              {(salonEvents.length > 0 || cashDiscountRate !== null) && (
                 <section className="px-6 lg:px-8 pt-4 pb-2">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-lg">campaign</span>
@@ -907,6 +915,33 @@ export default function CustomerDashboardPage() {
                         : t('events') || '이벤트'}
                     </h3>
                   </div>
+
+                  {/* Cash Discount & Point Benefits */}
+                  {cashDiscountRate !== null && (
+                    <div className="flex gap-2.5 mb-3 lg:grid lg:grid-cols-2 lg:gap-3">
+                      <div className="flex-1 p-4 rounded-xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="size-8 rounded-lg bg-emerald-500/15 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-emerald-600 text-lg">payments</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Cash Discount</span>
+                        </div>
+                        <p className="text-2xl font-black text-emerald-700">{cashDiscountRate}%</p>
+                        <p className="text-[11px] text-emerald-600/70 mt-1">현금 결제 시 할인</p>
+                      </div>
+                      <div className="flex-1 p-4 rounded-xl bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-100">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="size-8 rounded-lg bg-violet-500/15 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-violet-600 text-lg">toll</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-violet-600 uppercase tracking-wider">Point Earn</span>
+                        </div>
+                        <p className="text-2xl font-black text-violet-700">{pointEarnRate}%</p>
+                        <p className="text-[11px] text-violet-600/70 mt-1">결제 금액 포인트 적립</p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-3 lg:gap-3">
                     {salonEvents.map(ev => (
                       <div key={ev.id} className="flex gap-3 items-center p-3.5 rounded-xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition-colors">

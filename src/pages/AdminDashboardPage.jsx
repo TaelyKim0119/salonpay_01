@@ -212,6 +212,9 @@ export default function AdminDashboardPage() {
             <button className="p-2 rounded-full hover:bg-slate-100 transition-colors">
               <span className="material-symbols-outlined text-slate-600">notifications</span>
             </button>
+            <button onClick={() => setShowSettings(true)} className="hidden lg:flex p-2 rounded-full hover:bg-slate-100 transition-colors">
+              <span className="material-symbols-outlined text-slate-600">settings</span>
+            </button>
             <button
               onClick={handleLogout}
               className="h-10 w-10 rounded-full bg-rose-accent/20 border-2 border-rose-accent/50 flex items-center justify-center overflow-hidden text-rose-accent font-bold text-sm"
@@ -1780,10 +1783,10 @@ export default function AdminDashboardPage() {
 
         {/* Settings Bottom Sheet */}
         {showSettings && (
-          <div className="fixed inset-0 z-30 flex items-end justify-center" onClick={() => setShowSettings(false)}>
+          <div className="fixed inset-0 z-30 flex items-end lg:items-center justify-center" onClick={() => setShowSettings(false)}>
             <div className="absolute inset-0 bg-black/40" />
             <div
-              className="relative w-full max-w-md bg-white rounded-t-2xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-[slideUp_0.3s_ease-out]"
+              className="relative w-full max-w-md bg-white rounded-t-2xl lg:rounded-2xl p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] animate-[slideUp_0.3s_ease-out]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto mb-6" />

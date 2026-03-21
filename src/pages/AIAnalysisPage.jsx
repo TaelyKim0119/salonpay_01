@@ -302,14 +302,6 @@ export default function AIAnalysisPage() {
               <span className="material-symbols-outlined">analytics</span>
               <p className="text-[10px] font-bold uppercase tracking-wider">Analytics</p>
             </button>
-            <button className="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400">
-              <span className="material-symbols-outlined">group</span>
-              <p className="text-[10px] font-bold uppercase tracking-wider">Clients</p>
-            </button>
-            <button className="flex flex-1 flex-col items-center justify-center gap-1 text-slate-400">
-              <span className="material-symbols-outlined">settings</span>
-              <p className="text-[10px] font-bold uppercase tracking-wider">Settings</p>
-            </button>
           </nav>
         </div>
       </div>
