@@ -1534,30 +1534,54 @@ export default function AdminDashboardPage() {
               if (insights.length === 0) return null;
 
               return (
-                <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-xl shadow-sm p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="material-symbols-outlined text-white/90 text-lg">lightbulb</span>
-                    <h2 className="text-sm font-bold text-white">Weekly Insights</h2>
+                <div className="rounded-2xl overflow-hidden shadow-md border border-slate-100">
+                  {/* 헤더 — 전구 사진 배경 */}
+                  <div className="relative h-28 lg:h-32 overflow-hidden">
+                    <img src="/images/insights-bg.jpg" alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/40" />
+                    <div className="absolute inset-0 flex items-center px-5 lg:px-6">
+                      <div>
+                        <p className="text-amber-300/80 text-[10px] font-bold uppercase tracking-widest mb-1">Data-driven</p>
+                        <h2 className="text-white text-lg lg:text-xl font-black tracking-tight">Weekly Insights</h2>
+                        <p className="text-white/40 text-[11px] mt-0.5">이번 주 살롱 데이터 분석 리포트</p>
+                      </div>
+                      <div className="ml-auto text-right">
+                        <p className="text-white/30 text-[10px]">{insights.length}개 인사이트</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-3">
+
+                  {/* 인사이트 카드들 */}
+                  <div className="bg-white p-4 lg:p-5 space-y-3">
                     {insights.slice(0, 4).map((ins, i) => (
-                      <div key={i} className="rounded-xl overflow-hidden bg-white shadow-sm">
-                        <div className="px-3 py-2.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="material-symbols-outlined text-sm" style={{ color: ins.color }}>{ins.icon}</span>
-                            <span className="text-[12px] font-bold text-slate-800">{ins.title}</span>
+                      <div key={i} className="rounded-xl border border-slate-100 overflow-hidden hover:shadow-sm transition-shadow">
+                        <div className="px-4 py-3">
+                          <div className="flex items-start gap-3">
+                            {/* 아이콘 */}
+                            <div className="shrink-0 mt-0.5 size-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: ins.color + '12' }}>
+                              <span className="material-symbols-outlined text-base" style={{ color: ins.color, fontVariationSettings: "'FILL' 1" }}>{ins.icon}</span>
+                            </div>
+                            {/* 텍스트 */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className="text-[12px] font-bold text-slate-800">{ins.title}</span>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold" style={{ backgroundColor: ins.color + '15', color: ins.color }}>
+                                  {ins.type === 'positive' ? 'UP' : ins.type === 'warning' ? 'DOWN' : 'TIP'}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-slate-400 mb-1.5">{ins.desc}</p>
+                              <p className="text-[11px] text-slate-600 leading-relaxed">{ins.advice}</p>
+                            </div>
                           </div>
-                          <p className="text-[10px] text-slate-400 mb-1.5">{ins.desc}</p>
-                          <p className="text-[11px] text-slate-600 leading-relaxed">{ins.advice}</p>
                         </div>
                         {ins.couponText && (
                           <button
                             onClick={() => navigate('/admin/coupons')}
-                            className="flex items-center gap-2 w-full px-3 py-2 bg-orange-50 border-t border-orange-100 hover:bg-orange-100 transition-colors text-left"
+                            className="flex items-center gap-2 w-full px-4 py-2.5 bg-slate-50 border-t border-slate-100 hover:bg-slate-100 transition-colors text-left group"
                           >
-                            <span className="material-symbols-outlined text-orange-500 text-sm">{ins.couponIcon}</span>
-                            <span className="text-[11px] font-semibold text-orange-600 flex-1">{ins.couponText}</span>
-                            <span className="material-symbols-outlined text-orange-300 text-sm">arrow_forward</span>
+                            <span className="material-symbols-outlined text-amber-500 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{ins.couponIcon}</span>
+                            <span className="text-[11px] font-semibold text-slate-600 flex-1">{ins.couponText}</span>
+                            <span className="material-symbols-outlined text-slate-300 text-sm group-hover:text-slate-500 transition-colors">chevron_right</span>
                           </button>
                         )}
                       </div>
