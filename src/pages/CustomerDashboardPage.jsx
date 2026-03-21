@@ -113,7 +113,7 @@ function BrushCheck({ size = 36 }) {
   );
 }
 
-// ── Timeline Chart Component ──
+// ── Timeline Chart Component (Pro Designer Style) ──
 function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
   const monthData = useMemo(() => {
     const data = Array.from({ length: 12 }, () => []);
@@ -133,9 +133,8 @@ function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
   const hasTip = trendTip && trendTip.month >= 0;
   const tipMonth = hasTip ? trendTip.month : -1;
 
-  // ── Compact chart ──
-  const W = 400, H = 140;
-  const padTop = 10, padBot = 22, padLeft = 38, padRight = 8;
+  const W = 400, H = 160;
+  const padTop = 14, padBot = 26, padLeft = 38, padRight = 12;
   const chartW = W - padLeft - padRight;
   const chartH = H - padTop - padBot;
   const colW = chartW / 12;
@@ -175,101 +174,139 @@ function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
   const yTicks = ticks.filter((_, i) => i > 0 && i % 2 === 0).concat([ticks[ticks.length - 1]]);
   const uniqueYTicks = [...new Set(yTicks)];
 
+  // 최근 방문 찾기 (사진 표시용)
+  const latestVisitMonth = useMemo(() => {
+    for (let i = 11; i >= 0; i--) {
+      if (monthData[i].length > 0) return i;
+    }
+    return -1;
+  }, [monthData]);
+
   return (
-    <div className="w-full overflow-x-auto -ml-1">
+    <div className="w-full overflow-x-auto">
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[340px]" style={{ height: 'auto' }}>
         <defs>
           <linearGradient id={`ag-${year}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.2" />
-            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.01" />
+            <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.18" />
+            <stop offset="60%" stopColor="#c4b5fd" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="#c4b5fd" stopOpacity="0" />
           </linearGradient>
+          <linearGradient id={`line-${year}`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#8b5cf6" />
+            <stop offset="50%" stopColor="#a78bfa" />
+            <stop offset="100%" stopColor="#c084fc" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="1.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="dotShadow">
+            <feDropShadow dx="0" dy="0.5" stdDeviation="0.8" floodColor="#8b5cf6" floodOpacity="0.3" />
+          </filter>
         </defs>
 
-        {/* Season bands */}
-        {SEASON_BG.map((color, i) => (
-          <rect key={i} x={padLeft + colW * i} y={padTop} width={colW} height={chartH} fill={color} opacity="0.4" />
-        ))}
-
-        {/* Current month */}
-        {currentMonth >= 0 && (
-          <rect x={padLeft + colW * currentMonth} y={padTop} width={colW} height={chartH} fill="#8b5cf6" opacity="0.08" rx="2" />
-        )}
-
-        {/* Trend tip highlight band */}
-        {hasTip && (
-          <rect x={padLeft + colW * tipMonth} y={padTop} width={colW} height={chartH}
-            fill="#f490b1" opacity="0.1" rx="2" />
-        )}
-
-        {/* Y grid + labels */}
+        {/* Clean grid lines */}
         {uniqueYTicks.map(val => {
           const y = toY(val);
           return (
             <g key={`y-${val}`}>
-              <line x1={padLeft} y1={y} x2={padLeft + chartW} y2={y} stroke="#e2e8f0" strokeWidth="0.4" strokeDasharray="3 3" />
-              <text x={padLeft - 4} y={y + 2} textAnchor="end" fill="#a1a1aa" fontSize="5.5" fontWeight="500">
+              <line x1={padLeft} y1={y} x2={padLeft + chartW} y2={y} stroke="#f1f5f9" strokeWidth="0.5" />
+              <text x={padLeft - 6} y={y + 2} textAnchor="end" fill="#94a3b8" fontSize="5" fontWeight="500" fontFamily="Manrope, sans-serif">
                 {formatYLabel(val)}
               </text>
             </g>
           );
         })}
 
-        {/* Axes */}
-        <line x1={padLeft} y1={baseY} x2={padLeft + chartW} y2={baseY} stroke="#d1d5db" strokeWidth="0.6" />
-        <line x1={padLeft} y1={padTop} x2={padLeft} y2={baseY} stroke="#d1d5db" strokeWidth="0.6" />
+        {/* Bottom axis */}
+        <line x1={padLeft} y1={baseY} x2={padLeft + chartW} y2={baseY} stroke="#e2e8f0" strokeWidth="0.5" />
 
-        {/* Area + line */}
+        {/* Current month highlight */}
+        {currentMonth >= 0 && (
+          <rect x={padLeft + colW * currentMonth} y={padTop} width={colW} height={chartH} fill="#8b5cf6" opacity="0.04" rx="3" />
+        )}
+
+        {/* Trend tip band */}
+        {hasTip && (
+          <rect x={padLeft + colW * tipMonth} y={padTop} width={colW} height={chartH}
+            fill="#f490b1" opacity="0.06" rx="3" />
+        )}
+
+        {/* Gradient area fill */}
         {areaPath && <path d={areaPath} fill={`url(#ag-${year})`} />}
-        {curvePath && <path d={curvePath} fill="none" stroke="#8b5cf6" strokeWidth="1" strokeLinecap="round" opacity="0.7" />}
 
-        {/* Bars + color dots per month */}
+        {/* Main curve line with gradient */}
+        {curvePath && <path d={curvePath} fill="none" stroke={`url(#line-${year})`} strokeWidth="1.8" strokeLinecap="round" />}
+
+        {/* Data points with refined styling */}
         {monthData.map((monthVisits, mi) => {
           const cx = padLeft + colW * mi + colW / 2;
           if (monthVisits.length === 0) return null;
 
-          const barH = Math.max((monthlySpend[mi] / (niceMax || 1)) * chartH, 2);
-          const barW = colW * 0.4;
+          const isLatest = mi === latestVisitMonth;
 
           return (
             <g key={`bar-${mi}`}>
-              <rect x={cx - barW / 2} y={baseY - barH} width={barW} height={barH} rx="2"
-                fill={monthVisits[0].category.color} opacity="0.12" />
               {monthVisits.map((visit, vi) => {
-                const dy = baseY - barH - 6 - vi * 9;
-                const dotCy = Math.max(padTop + 4, dy);
+                const spend = monthlySpend[mi];
+                const dotCy = toY(spend);
+                const isFirst = vi === 0;
                 return (
                   <g key={`d-${mi}-${vi}`} className="cursor-pointer" onClick={() => onDotClick && onDotClick(visit, mi)}>
-                    <circle cx={cx} cy={dotCy} r="5" fill="transparent" />
-                    <circle cx={cx} cy={dotCy} r="3.5" fill={visit.category.color} opacity="0.2" />
-                    <circle cx={cx} cy={dotCy} r="2.5" fill={visit.category.color} stroke="white" strokeWidth="0.8" />
+                    {/* Hover area */}
+                    <circle cx={cx} cy={dotCy} r="8" fill="transparent" />
+                    {isFirst && (
+                      <>
+                        {/* Vertical line to axis */}
+                        <line x1={cx} y1={dotCy} x2={cx} y2={baseY} stroke={visit.category.color} strokeWidth="0.4" strokeDasharray="2 2" opacity="0.3" />
+                        {/* Outer glow ring */}
+                        <circle cx={cx} cy={dotCy} r="5" fill={visit.category.color} opacity="0.08" />
+                        {/* Main dot */}
+                        <circle cx={cx} cy={dotCy} r="3.2" fill="white" stroke={visit.category.color} strokeWidth="1.5" filter="url(#dotShadow)" />
+                        <circle cx={cx} cy={dotCy} r="1.5" fill={visit.category.color} />
+                        {/* Latest visit - pulsing ring */}
+                        {isLatest && (
+                          <>
+                            <circle cx={cx} cy={dotCy} r="6" fill="none" stroke={visit.category.color} strokeWidth="0.6" opacity="0.4">
+                              <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.4;0.1;0.4" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                            {/* Camera icon hint for latest */}
+                            <g transform={`translate(${cx + 6}, ${dotCy - 6})`}>
+                              <circle r="4" fill="white" stroke="#94a3b8" strokeWidth="0.4" />
+                              <text textAnchor="middle" y="2" fill="#64748b" fontSize="4.5" fontFamily="Material Symbols Outlined">📷</text>
+                            </g>
+                          </>
+                        )}
+                        {/* Spend label */}
+                        {spend > 0 && (
+                          <text x={cx} y={dotCy - 8} textAnchor="middle" fill="#64748b" fontSize="4.5" fontWeight="600" fontFamily="Manrope, sans-serif">
+                            {Math.round(spend / 10000)}만
+                          </text>
+                        )}
+                      </>
+                    )}
                   </g>
                 );
               })}
-              {monthlySpend[mi] > 0 && (
-                <text
-                  x={cx}
-                  y={Math.max(padTop + 2, baseY - barH - 4 - monthVisits.length * 9)}
-                  textAnchor="middle" fill="#64748b" fontSize="4.5" fontWeight="600" opacity="0.7"
-                >
-                  {Math.round(monthlySpend[mi] / 10000)}만
-                </text>
-              )}
             </g>
           );
         })}
 
-        {/* ── Trend pin marker on empty month ── */}
+        {/* Trend pin */}
         {hasTip && (() => {
           const cx = padLeft + colW * tipMonth + colW / 2;
-          const topY = -2;
-          const midY = (baseY + topY) / 2;
-          const sw = colW * 1.2;
           return (
             <g>
-              <path d={`M ${cx} ${baseY} C ${cx + sw} ${midY + 15}, ${cx - sw} ${midY - 15}, ${cx} ${topY}`}
-                stroke="#ec4899" strokeWidth="0.8" strokeDasharray="3 2.5" opacity="0.4" fill="none" />
-              <circle cx={cx} cy={baseY} r="3.5" fill="white" stroke="#ec4899" strokeWidth="1" />
-              <circle cx={cx} cy={baseY} r="1.5" fill="#ec4899" />
+              <line x1={cx} y1={baseY - 4} x2={cx} y2={padTop + 8} stroke="#ec4899" strokeWidth="0.6" strokeDasharray="2 2" opacity="0.4" />
+              <circle cx={cx} cy={baseY} r="3" fill="white" stroke="#ec4899" strokeWidth="1" />
+              <circle cx={cx} cy={baseY} r="1.2" fill="#ec4899" />
+              {/* Pin top */}
+              <g transform={`translate(${cx}, ${padTop + 4})`}>
+                <circle r="5" fill="#ec4899" opacity="0.1" />
+                <circle r="3" fill="white" stroke="#ec4899" strokeWidth="0.8" />
+                <text textAnchor="middle" y="1.5" fill="#ec4899" fontSize="3.5" fontWeight="bold">✦</text>
+              </g>
             </g>
           );
         })()}
@@ -279,20 +316,21 @@ function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
           const isNow = i === currentMonth;
           const hasData = monthData[i].length > 0;
           const isTipMonth = i === tipMonth;
+          const cx = padLeft + colW * i + colW / 2;
           return (
             <g key={`x-${i}`}>
               <text
-                x={padLeft + colW * i + colW / 2}
-                y={H - 5}
+                x={cx} y={H - 6}
                 textAnchor="middle"
-                fill={isTipMonth ? '#ec4899' : isNow ? '#7c3aed' : hasData ? '#64748b' : '#c4b5fd'}
-                fontSize={isTipMonth ? '6' : isNow ? '6.5' : '5.5'}
-                fontWeight={isTipMonth || isNow ? '800' : '500'}
+                fill={isTipMonth ? '#ec4899' : isNow ? '#7c3aed' : hasData ? '#475569' : '#cbd5e1'}
+                fontSize={isNow ? '6' : '5.5'}
+                fontWeight={isTipMonth || isNow ? '700' : '400'}
+                fontFamily="Manrope, sans-serif"
               >
                 {label}월
               </text>
-              {isNow && <circle cx={padLeft + colW * i + colW / 2} cy={H - 1} r="1.2" fill="#7c3aed" />}
-              {isTipMonth && !isNow && <circle cx={padLeft + colW * i + colW / 2} cy={H - 1} r="1.2" fill="#ec4899" />}
+              {isNow && <rect x={cx - 3} y={H - 3} width="6" height="1.5" rx="0.75" fill="#7c3aed" />}
+              {isTipMonth && !isNow && <rect x={cx - 3} y={H - 3} width="6" height="1.5" rx="0.75" fill="#ec4899" />}
             </g>
           );
         })}
@@ -407,7 +445,7 @@ function CouponQRModal({ coupon, salonName, onClose, t }) {
             />
           </div>
 
-          <p className="text-[11px] text-slate-400 text-center mb-1">매장에서 QR코드를 스캔해주세요</p>
+          <p className="text-[11px] text-slate-400 text-center mb-1">{t('scanQR') || '매장에서 QR코드를 스캔해주세요'}</p>
           {salonName && <p className="text-[10px] text-slate-300">{salonName}</p>}
         </div>
       </div>
@@ -585,31 +623,43 @@ export default function CustomerDashboardPage() {
           {/* ──── HOME TAB ──── */}
           {activeTab === 'home' && (
             <>
-              {/* Loyalty Card */}
+              {/* Loyalty Card with Background Image */}
               <div className="px-6 lg:px-8 py-2">
-                <div className="loyalty-gradient rounded-xl p-6 shadow-lg shadow-primary/20 relative overflow-hidden">
-                  <div className="absolute top-[-20%] right-[-10%] opacity-20 pointer-events-none text-white">
-                    <span className="material-symbols-outlined text-[120px] rotate-12">auto_awesome</span>
-                  </div>
-                  <div className="relative z-10 flex flex-col gap-6">
+                <div className="rounded-2xl shadow-xl shadow-primary/25 relative overflow-hidden" style={{ minHeight: '180px' }}>
+                  {/* Background image */}
+                  <img
+                    src="/images/loyalty-bg.jpg"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  {/* Dark gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/30" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                  <div className="relative z-10 p-6 flex flex-col gap-5">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-white/80 text-xs font-semibold uppercase tracking-widest mb-1">Loyalty Points</p>
-                        <p className="text-white text-3xl font-extrabold tracking-tight">
-                          {formatNumber(points)} <span className="text-sm font-normal opacity-90">pts</span>
+                        <p className="text-white/80 text-[10px] font-semibold uppercase tracking-[0.2em] mb-1.5">
+                          {t('loyaltyPoints') || '사용가능 포인트'}
+                        </p>
+                        <p className="text-white text-3xl font-extrabold tracking-tight drop-shadow-lg">
+                          {formatNumber(points)} <span className="text-sm font-normal opacity-80">pts</span>
                         </p>
                       </div>
-                      <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/30">
-                        <p className="text-white text-xs font-bold uppercase tracking-tighter">{statusLabel}</p>
+                      <div className="bg-white/20 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/30 shadow-lg">
+                        <p className="text-white text-[11px] font-bold uppercase tracking-tight">{statusLabel}</p>
                       </div>
                     </div>
                     <div className="flex items-end justify-between">
-                      <div className="flex items-center gap-2 text-white/70">
-                        <span className="material-symbols-outlined text-sm">confirmation_number</span>
-                        <span className="text-xs font-medium">{coupons.length} coupons</span>
-                      </div>
-                      <div className="text-white/70 text-xs font-medium">
-                        {allVisits.length}회 방문
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                          <span className="material-symbols-outlined text-white/90 text-sm">confirmation_number</span>
+                          <span className="text-white/90 text-[11px] font-semibold">{coupons.length} {t('coupons')}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-white/15 backdrop-blur-sm rounded-full px-3 py-1.5">
+                          <span className="material-symbols-outlined text-white/90 text-sm">history</span>
+                          <span className="text-white/90 text-[11px] font-semibold">{allVisits.length}회 {t('visits')}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -623,7 +673,7 @@ export default function CustomerDashboardPage() {
                   className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary/10 border border-primary/20 rounded-xl font-semibold text-primary hover:bg-primary/15 active:scale-[0.98] transition-all"
                 >
                   <span className="material-symbols-outlined text-lg">calendar_month</span>
-                  <span className="text-sm">예약하기</span>
+                  <span className="text-sm">{t('booking') || '예약하기'}</span>
                 </button>
               </div>
 
@@ -631,8 +681,8 @@ export default function CustomerDashboardPage() {
               <section className="px-6 lg:px-8 pt-6 pb-2">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-slate-900 text-lg font-bold">My Style Timeline</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">월별 시술 내역 & 지출</p>
+                    <h3 className="text-slate-900 text-lg font-bold">{t('myStyleTimeline') || 'My Style Timeline'}</h3>
+                    <p className="text-xs text-slate-400 mt-0.5">{t('monthlyServiceSpend') || '월별 시술 내역 & 지출'}</p>
                   </div>
                   {/* Year selector */}
                   <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-0.5">
@@ -655,51 +705,108 @@ export default function CustomerDashboardPage() {
                 {/* Chart */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 lg:p-5 relative">
 
-                  {/* ── Trend Recommendation — above chart ── */}
+                  {/* ── Style Pick — 강조 섹션 ── */}
                   {trendTip && (
-                    <div className="mb-3 border border-dashed border-pink-300 rounded-xl p-3 bg-pink-50/30">
-                      <div className="flex gap-3 items-center">
-                        {/* Brush check */}
-                        <div className="shrink-0">
-                          <BrushCheck size={32} />
-                        </div>
-                        {/* Text */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5 mb-0.5">
-                            <span className="text-[9px] font-black text-pink-400 uppercase tracking-widest">Style Pick</span>
-                            <span className="text-[9px] text-slate-300">·</span>
-                            <span className="text-[9px] text-slate-400">{trendTip.month + 1}월</span>
+                    <div className="mb-4 rounded-2xl overflow-hidden bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 border border-pink-200/60 shadow-sm">
+                      {/* Top accent bar */}
+                      <div className="bg-gradient-to-r from-pink-400 via-rose-400 to-fuchsia-400 h-1" />
+                      <div className="p-4">
+                        <div className="flex gap-3 items-start">
+                          {/* Icon area */}
+                          <div className="shrink-0 size-12 rounded-xl bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center shadow-lg shadow-pink-400/30">
+                            <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
                           </div>
-                          <p className="text-[12px] text-slate-600 leading-[1.5]">
-                            작년 이맘때 <span className="font-bold text-slate-800">{trendTip.lastService}</span> 하셨는데, 올해 유행하는 <span className="font-bold text-pink-500">{trendTip.trend}</span> 해보시는 건 어때요?
-                          </p>
+                          {/* Text */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[11px] font-black text-pink-500 uppercase tracking-wider">{t('stylePick') || 'Style Pick'}</span>
+                              <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse">HOT</span>
+                              <span className="text-[10px] text-pink-400/70 font-medium">{trendTip.month + 1}월</span>
+                            </div>
+                            <p className="text-[13px] text-slate-700 leading-relaxed">
+                              작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데, 올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
+                            </p>
+                            <p className="text-[11px] text-pink-400/80 mt-0.5 italic">{trendTip.reason}</p>
+                          </div>
                         </div>
+
+                        {/* Coupon CTA */}
+                        {coupons.length > 0 && (
+                          <div className="mt-3 flex items-center gap-2 bg-white/70 backdrop-blur-sm rounded-xl p-2.5 border border-pink-100">
+                            <span className="material-symbols-outlined text-amber-500 text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[11px] font-bold text-slate-700">
+                                {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
+                              </p>
+                              <p className="text-[10px] text-slate-400">{coupons.length}장의 쿠폰 사용 가능</p>
+                            </div>
+                            <button
+                              onClick={() => setActiveTab('coupons')}
+                              className="shrink-0 px-3 py-1.5 bg-pink-500 text-white text-[10px] font-bold rounded-lg hover:bg-pink-600 active:scale-95 transition-all shadow-sm"
+                            >
+                              {t('viewCoupons') || '쿠폰 보기'}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
 
                   <StyleTimelineChart visits={allVisits} year={chartYear} trendTip={trendTip} onDotClick={(visit, month) => setSelectedDot(prev => prev?.visit?.id === visit.id ? null : { visit, month })} />
 
-                  {/* Dot detail popup */}
+                  {/* Dot detail popup with style photo */}
                   {selectedDot && (() => {
                     const v = selectedDot.visit;
                     const cat = v.category || getServiceCategory(v.service);
+                    // 최근 방문인지 확인
+                    const sortedVisits = [...allVisits].sort((a, b) => new Date(b.date) - new Date(a.date));
+                    const isLatestVisit = sortedVisits.length > 0 && sortedVisits[0].id === v.id;
                     return (
-                      <div className="mt-2 flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50/80 animate-in fade-in">
-                        <div className="size-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: cat.color + '15' }}>
-                          <div className="size-3 rounded-full" style={{ backgroundColor: cat.color }} />
+                      <div className="mt-3 rounded-2xl border border-slate-100 bg-white shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                        {/* Style photo for latest visit */}
+                        {isLatestVisit && (
+                          <div className="relative h-48 overflow-hidden">
+                            <img
+                              src="/images/style-photo.jpg"
+                              alt={t('stylePhoto') || '스타일 사진'}
+                              className="w-full h-full object-cover object-top"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                            <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                              <div>
+                                <p className="text-white text-sm font-bold drop-shadow-lg">{v.service}</p>
+                                <p className="text-white/80 text-[11px] drop-shadow">{v.date}</p>
+                              </div>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/20 backdrop-blur-sm text-white`}>
+                                <span className="size-1.5 rounded-full" style={{ backgroundColor: cat.color }} />{cat.label}
+                              </span>
+                            </div>
+                            <button onClick={() => setSelectedDot(null)} className="absolute top-2 right-2 size-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                              <span className="material-symbols-outlined text-white text-sm">close</span>
+                            </button>
+                          </div>
+                        )}
+                        <div className={`flex items-center gap-3 p-3.5 ${isLatestVisit ? 'border-t border-slate-50' : ''}`}>
+                          {!isLatestVisit && (
+                            <div className="size-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: cat.color + '12' }}>
+                              <div className="size-3.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            {!isLatestVisit && <p className="text-sm font-bold text-slate-800 truncate">{v.service}</p>}
+                            {!isLatestVisit && <p className="text-[11px] text-slate-400">{v.date} · {cat.label}</p>}
+                            {isLatestVisit && <p className="text-[11px] text-slate-500">최근 방문 스타일</p>}
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-bold text-primary">{formatNumber(v.finalAmount || 0)}{t('won')}</p>
+                            <p className="text-[10px] text-slate-400">+{formatNumber(v.pointsEarned || 0)}P</p>
+                          </div>
+                          {!isLatestVisit && (
+                            <button onClick={() => setSelectedDot(null)} className="ml-1 size-6 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors">
+                              <span className="material-symbols-outlined text-slate-400 text-sm">close</span>
+                            </button>
+                          )}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-slate-800 truncate">{v.service}</p>
-                          <p className="text-[11px] text-slate-400">{v.date} · {cat.label}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-primary">{formatNumber(v.finalAmount || 0)}{t('won')}</p>
-                          <p className="text-[10px] text-slate-400">+{formatNumber(v.pointsEarned || 0)}P</p>
-                        </div>
-                        <button onClick={() => setSelectedDot(null)} className="ml-1 size-6 flex items-center justify-center rounded-full hover:bg-slate-200 transition-colors">
-                          <span className="material-symbols-outlined text-slate-400 text-sm">close</span>
-                        </button>
                       </div>
                     );
                   })()}
@@ -724,7 +831,7 @@ export default function CustomerDashboardPage() {
               {categoryDistribution.length > 0 && (
                 <section className="px-6 lg:px-8 pt-4 pb-2">
                   <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 lg:p-5">
-                    <h4 className="text-sm font-bold text-slate-700 mb-4">{chartYear}년 서비스 분포</h4>
+                    <h4 className="text-sm font-bold text-slate-700 mb-4">{chartYear} {t('serviceDistribution') || '서비스 분포'}</h4>
                     <div className="flex items-center gap-6">
                       {/* Donut */}
                       <div className="shrink-0">
@@ -762,8 +869,8 @@ export default function CustomerDashboardPage() {
               {coupons.length > 0 && (
                 <section className="px-6 lg:px-8 pt-4 pb-2">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-slate-900 text-base font-bold">My Coupons</h3>
-                    <button onClick={() => setActiveTab('coupons')} className="text-xs text-primary font-semibold">전체보기</button>
+                    <h3 className="text-slate-900 text-base font-bold">{t('myCoupons') || 'My Coupons'}</h3>
+                    <button onClick={() => setActiveTab('coupons')} className="text-xs text-primary font-semibold">{t('viewAll') || '전체보기'}</button>
                   </div>
                   <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                     {coupons.map(coupon => (
@@ -780,7 +887,7 @@ export default function CustomerDashboardPage() {
                 <section className="px-6 lg:px-8 pt-4 pb-2">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="material-symbols-outlined text-primary text-lg">campaign</span>
-                    <h3 className="text-slate-900 text-base font-bold">Events</h3>
+                    <h3 className="text-slate-900 text-base font-bold">{t('events') || '이벤트'}</h3>
                   </div>
                   <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-3 lg:gap-3">
                     {salonEvents.map(ev => (
@@ -820,19 +927,19 @@ export default function CustomerDashboardPage() {
                       <div className="relative z-10">
                         <div className="flex items-center gap-2 mb-3">
                           <span className="material-symbols-outlined text-white/90 text-lg">local_offer</span>
-                          <span className="text-white/80 text-xs font-bold uppercase tracking-wider">My Savings</span>
+                          <span className="text-white/80 text-xs font-bold uppercase tracking-wider">{t('mySavings') || 'My Savings'}</span>
                         </div>
                         <p className="text-white text-3xl font-extrabold mb-1">
                           {formatNumber(totalSaved)}<span className="text-lg font-normal opacity-80">{t('won')}</span>
                         </p>
-                        <p className="text-white/60 text-xs mb-4">총 할인 + 포인트 사용 혜택</p>
+                        <p className="text-white/60 text-xs mb-4">{t('totalSavedDesc') || '총 할인 + 포인트 사용 혜택'}</p>
                         <div className="flex gap-4">
                           <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-white/60 text-[10px] font-semibold mb-1">쿠폰 할인</p>
+                            <p className="text-white/60 text-[10px] font-semibold mb-1">{t('couponDiscount') || '쿠폰 할인'}</p>
                             <p className="text-white text-lg font-extrabold">{formatNumber(totalDiscount)}<span className="text-xs opacity-70">{t('won')}</span></p>
                           </div>
                           <div className="flex-1 bg-white/15 backdrop-blur-sm rounded-xl p-3">
-                            <p className="text-white/60 text-[10px] font-semibold mb-1">포인트 사용</p>
+                            <p className="text-white/60 text-[10px] font-semibold mb-1">{t('pointsUsedLabel') || '포인트 사용'}</p>
                             <p className="text-white text-lg font-extrabold">{formatNumber(totalPointsUsed)}<span className="text-xs opacity-70">P</span></p>
                           </div>
                         </div>
@@ -857,8 +964,8 @@ export default function CustomerDashboardPage() {
           {/* ──── COUPONS TAB ──── */}
           {activeTab === 'coupons' && (
             <section className="px-6 lg:px-8 py-4">
-              <h3 className="text-slate-900 text-xl font-bold mb-1">My Coupons</h3>
-              <p className="text-xs text-slate-400 mb-5">{coupons.length}장 사용 가능</p>
+              <h3 className="text-slate-900 text-xl font-bold mb-1">{t('myCoupons') || 'My Coupons'}</h3>
+              <p className="text-xs text-slate-400 mb-5">{coupons.length}장 {t('couponCount')?.replace('{count}', '') || '사용 가능'}</p>
 
               {coupons.length > 0 ? (
                 <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-4">
@@ -911,7 +1018,7 @@ export default function CustomerDashboardPage() {
               ) : (
                 <div className="flex flex-col items-center justify-center py-16 text-slate-300">
                   <span className="material-symbols-outlined text-[48px] mb-2">confirmation_number</span>
-                  <p className="text-sm text-slate-400">사용 가능한 쿠폰이 없습니다</p>
+                  <p className="text-sm text-slate-400">{t('noCouponsAvailable') || '사용 가능한 쿠폰이 없습니다'}</p>
                 </div>
               )}
             </section>
@@ -920,8 +1027,8 @@ export default function CustomerDashboardPage() {
           {/* ──── HISTORY TAB ──── */}
           {activeTab === 'history' && (
             <section className="px-6 lg:px-8 py-4">
-              <h3 className="text-slate-900 text-xl font-bold mb-1">Style Journey</h3>
-              <p className="text-xs text-slate-400 mb-6">{allVisits.length}회 방문 기록</p>
+              <h3 className="text-slate-900 text-xl font-bold mb-1">{t('journey') || 'Style Journey'}</h3>
+              <p className="text-xs text-slate-400 mb-6">{allVisits.length}회 {t('visitRecords') || '방문 기록'}</p>
 
               {allVisits.length > 0 ? (
                 <div className="relative">
@@ -983,9 +1090,9 @@ export default function CustomerDashboardPage() {
         {/* Bottom Navigation Bar */}
         <nav className="lg:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white border-t border-slate-100 px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 flex justify-between items-center z-50">
           {[
-            { key: 'home', icon: 'home', label: t('home') || 'Home' },
-            { key: 'history', icon: 'timeline', label: 'Journey' },
-            { key: 'coupons', icon: 'confirmation_number', label: t('coupons') || 'Coupons' },
+            { key: 'home', icon: 'home', label: t('home') || '홈' },
+            { key: 'history', icon: 'timeline', label: t('journey') || '스타일 여정' },
+            { key: 'coupons', icon: 'confirmation_number', label: t('coupons') || '쿠폰' },
           ].map((tab) => {
             const isActive = activeTab === tab.key;
             return (
