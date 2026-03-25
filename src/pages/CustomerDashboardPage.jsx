@@ -657,16 +657,7 @@ export default function CustomerDashboardPage() {
                 </div>
               </div>
 
-              {/* Booking Button */}
-              <div className="px-6 lg:px-8 pt-4">
-                <button
-                  onClick={() => navigate('/booking')}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-primary/10 border border-primary/20 rounded-xl font-semibold text-primary hover:bg-primary/15 active:scale-[0.98] transition-all"
-                >
-                  <span className="material-symbols-outlined text-lg">calendar_month</span>
-                  <span className="text-sm">{t('booking') || '예약하기'}</span>
-                </button>
-              </div>
+              {/* Booking Button removed - CTA is in Style Pick card */}
 
               {/* ── Style Timeline Chart ── */}
               <section className="px-6 lg:px-8 pt-6 pb-2">
@@ -737,9 +728,9 @@ export default function CustomerDashboardPage() {
                                 <p className="text-primary/70 text-sm mt-1 font-semibold">{trendTip.reason}</p>
                               </div>
 
-                              <p className="text-sm text-slate-600 leading-relaxed">
-                                작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데,{' '}
-                                올해 유행하는 <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-500">{trendTip.trend}</span> 해보시는 건 어때요?
+                              <p className="text-sm font-bold leading-relaxed bg-amber-300 text-slate-900 rounded-lg px-3 py-2 inline-block">
+                                작년 이맘때 <span className="font-extrabold underline decoration-2 decoration-amber-600">{trendTip.lastService}</span> 하셨는데,{' '}
+                                올해 유행하는 <span className="font-black text-amber-900">{trendTip.trend}</span> 해보시는 건 어때요?
                               </p>
 
                               {/* 예약 CTA 버튼 */}

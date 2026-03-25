@@ -157,7 +157,7 @@ export default function CustomerDetailPage() {
                     <div className={`h-8 w-8 rounded-full flex items-center justify-center ring-4 ring-bg-light ${
                       hasPhoto(visit.service)
                         ? 'bg-primary node-photo-glow cursor-pointer'
-                        : index === 0 ? 'bg-rose-accent' : 'bg-slate-300'
+                        : index === 0 ? 'bg-accent ring-accent/20' : 'bg-slate-300'
                     }`}>
                       <span className="material-symbols-outlined text-white text-sm">
                         {hasPhoto(visit.service) ? 'photo_camera' : getServiceIcon(visit.service)}
