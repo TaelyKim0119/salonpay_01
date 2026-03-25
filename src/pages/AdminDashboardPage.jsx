@@ -1120,7 +1120,7 @@ export default function AdminDashboardPage() {
             return (
               <section id="chart-coupon-src" className="bg-white p-5 lg:p-6 rounded-xl shadow-sm border border-slate-100">
                 {/* 헤더 */}
-                <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="material-symbols-outlined text-violet-500 text-lg">confirmation_number</span>
                     <h2 className="text-base font-bold">Coupon Analysis</h2>
@@ -1129,6 +1129,25 @@ export default function AdminDashboardPage() {
                     쿠폰 발행<span className="material-symbols-outlined text-sm">arrow_forward</span>
                   </button>
                 </div>
+
+                {/* 한줄 요약 */}
+                {(() => {
+                  const best = typeData.reduce((a, b) => (b.issued > 0 && (b.used / b.issued) > (a.used / a.issued)) ? b : a, typeData[0]);
+                  const worst = typeData.reduce((a, b) => (b.issued > 0 && (b.used / b.issued) < (a.used / a.issued)) ? b : a, typeData[0]);
+                  const bestRate = best.issued > 0 ? Math.round((best.used / best.issued) * 100) : 0;
+                  const worstRate = worst.issued > 0 ? Math.round((worst.used / worst.issued) * 100) : 0;
+                  return (
+                    <p className="text-[12px] text-slate-500 mb-4 leading-relaxed">
+                      <span className="material-symbols-outlined text-emerald-500 text-[14px] align-middle mr-0.5">trending_up</span>
+                      <span className="font-bold text-emerald-600">{typeLabels[best.type] || best.type}</span>
+                      <span className="text-slate-400"> 사용률 {bestRate}%로 최고</span>
+                      <span className="text-slate-300 mx-1.5">·</span>
+                      <span className="material-symbols-outlined text-red-400 text-[14px] align-middle mr-0.5">trending_down</span>
+                      <span className="font-bold text-red-500">{typeLabels[worst.type] || worst.type}</span>
+                      <span className="text-slate-400"> {worstRate}%로 개선 필요</span>
+                    </p>
+                  );
+                })()}
 
                 {/* 범례 */}
                 <div className="flex justify-center gap-5 mb-4">
