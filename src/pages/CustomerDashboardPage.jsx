@@ -728,18 +728,14 @@ export default function CustomerDashboardPage() {
                                 <p className="text-primary/70 text-sm mt-1 font-semibold">{trendTip.reason}</p>
                               </div>
 
-                              {/* 잡지 타이포 스타일 추천 문구 */}
-                              <div className="space-y-0.5 leading-snug">
-                                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">Last time</p>
-                                <p className="text-[15px] font-extrabold text-slate-700 tracking-tight">
-                                  {trendTip.lastService}
-                                </p>
-                                <p className="text-[11px] font-medium text-slate-400 pt-1.5 pb-0.5">올해 트렌드는 이거야</p>
-                                <p className="text-[22px] font-black tracking-tighter bg-gradient-to-r from-violet-500 via-purple-400 to-rose-400 bg-clip-text text-transparent leading-none">
-                                  {trendTip.trend}
-                                </p>
-                                <p className="text-[11px] text-slate-400 font-medium pt-1">한번 시도해보는 건 어때요?</p>
-                              </div>
+                              {/* 한 문장 타이포 — 키워드만 크고 강조 */}
+                              <p className="text-[13px] text-slate-500 leading-relaxed">
+                                작년 이맘때{' '}
+                                <span className="text-[17px] font-extrabold text-slate-800 align-baseline">{trendTip.lastService}</span>
+                                {' '}하셨는데, 올해 유행하는{' '}
+                                <span className="text-[22px] font-black bg-gradient-to-r from-violet-500 via-purple-400 to-rose-400 bg-clip-text text-transparent align-baseline leading-none">{trendTip.trend}</span>
+                                {' '}해보시는 건 어때요?
+                              </p>
 
                               {/* CTA 버튼 한 행 */}
                               <div className="mt-4 flex gap-2">
