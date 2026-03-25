@@ -374,11 +374,11 @@ export default function AdminDashboardPage() {
 
                   {/* 사진 위에 매출 데이터 오버레이 */}
                   <div className="absolute inset-0 flex flex-col justify-end p-4 lg:p-7">
-                    {/* This Month (위 — 크게) */}
+                    {/* This Week (위 — 크게) */}
                     <div className="mb-3 lg:mb-5">
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="material-symbols-outlined text-orange-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
                         <span className="text-[9px] text-white/25 ml-1">{mStart}~{mEnd}</span>
                       </div>
                       <p className="text-2xl lg:text-5xl font-black text-white tracking-tight leading-none drop-shadow-lg">
@@ -394,11 +394,11 @@ export default function AdminDashboardPage() {
                     {/* 구분선 */}
                     <div className="border-t border-white/10 mb-3 lg:mb-5 w-2/3" />
 
-                    {/* This Week (아래 — 작게) */}
+                    {/* This Month (아래 — 작게) */}
                     <div>
                       <div className="flex items-center gap-1.5 mb-1">
                         <span className="material-symbols-outlined text-blue-400 text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>date_range</span>
-                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Week</span>
+                        <span className="text-[9px] lg:text-[10px] font-bold text-white/50 uppercase tracking-widest">This Month</span>
                         <span className="text-[9px] text-white/25 ml-1">{wStart}~{wEnd}</span>
                       </div>
                       <p className="text-xl lg:text-4xl font-black text-white/90 tracking-tight leading-none drop-shadow-lg">
