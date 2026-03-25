@@ -1849,10 +1849,6 @@ export default function AdminDashboardPage() {
             <span className="material-symbols-outlined" style={activeTab === 'clients' ? { fontVariationSettings: "'FILL' 1" } : {}}>group</span>
             <span className="text-[10px] font-bold uppercase tracking-wider">Clients</span>
           </button>
-          <button onClick={() => navigate('/admin/ai-analysis')} className="flex flex-col items-center gap-1 text-slate-400">
-            <span className="material-symbols-outlined">auto_awesome</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider">AI</span>
-          </button>
           <button onClick={() => setShowSettings(true)} className={`flex flex-col items-center gap-1 ${showSettings ? 'text-accent' : 'text-slate-400'}`}>
             <span className="material-symbols-outlined">settings</span>
             <span className="text-[10px] font-bold uppercase tracking-wider">Settings</span>
