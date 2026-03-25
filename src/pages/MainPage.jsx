@@ -34,20 +34,12 @@ export default function MainPage() {
       </div>
 
       <div className="relative flex h-auto min-h-screen lg:min-h-0 w-full lg:max-w-5xl flex-col overflow-x-hidden">
-        {/* Header Section */}
-        <div className="flex items-center p-4 pb-2 justify-between">
-          <div className="text-slate-900 flex size-12 shrink-0 items-center justify-center cursor-pointer">
-            <span className="material-symbols-outlined">arrow_back</span>
-          </div>
-          <h2 className="text-slate-900 text-lg font-semibold leading-tight tracking-tight flex-1 text-center pr-12 uppercase tracking-widest text-xs opacity-60">
-            SALONPAY
-          </h2>
-        </div>
-
-        <div className="flex flex-col items-center px-6 pt-12 lg:pt-16 pb-8">
-          <h1 className="tracking-tight text-[40px] lg:text-[52px] font-extrabold leading-none text-center">
-            <span className="bg-gradient-to-r from-primary via-primary-dark to-rose-accent bg-clip-text text-transparent">Salon</span><span className="text-slate-900">Pay</span>
-          </h1>
+        <div className="flex flex-col items-center px-6 pt-10 lg:pt-16 pb-8">
+          <img
+            src="/images/logo-salonpay.png"
+            alt="SalonPay"
+            className="h-36 lg:h-48 object-contain"
+          />
           <div className="w-12 h-1 bg-gradient-to-r from-accent to-primary rounded-full mt-4 mb-4" />
           <p className="text-slate-500 text-base lg:text-lg font-normal leading-relaxed text-center max-w-xs lg:max-w-lg">
             {t('appSubtitle') || 'Select your experience to begin your journey in premium beauty services.'}
