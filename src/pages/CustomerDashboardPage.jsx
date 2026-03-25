@@ -259,8 +259,21 @@ function StyleTimelineChart({ visits, year, onDotClick, trendTip }) {
                       <>
                         {/* Vertical line to axis */}
                         <line x1={cx} y1={dotCy} x2={cx} y2={baseY} stroke="#e2e8f0" strokeWidth="0.5" />
-                        {/* Main dot - uniform small circle */}
-                        <circle cx={cx} cy={dotCy} r="3" fill="#f490b1" />
+                        {/* Current month glow effect */}
+                        {mi === new Date().getMonth() && year === new Date().getFullYear() && (
+                          <>
+                            <circle cx={cx} cy={dotCy} r="7" fill="#8b5cf6" opacity="0.15">
+                              <animate attributeName="r" values="5;9;5" dur="2s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.2;0.05;0.2" dur="2s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cx={cx} cy={dotCy} r="5" fill="none" stroke="#8b5cf6" strokeWidth="0.5" opacity="0.4">
+                              <animate attributeName="r" values="4;10;4" dur="2.5s" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="0.4;0;0.4" dur="2.5s" repeatCount="indefinite" />
+                            </circle>
+                          </>
+                        )}
+                        {/* Main dot */}
+                        <circle cx={cx} cy={dotCy} r={mi === new Date().getMonth() && year === new Date().getFullYear() ? "4" : "3"} fill={mi === new Date().getMonth() && year === new Date().getFullYear() ? "#8b5cf6" : "#f490b1"} />
                         {/* Spend label */}
                         {spend > 0 && (
                           <text x={cx} y={dotCy - 6} textAnchor="middle" fill="#64748b" fontSize="4.5" fontWeight="600" fontFamily="Manrope, sans-serif">
