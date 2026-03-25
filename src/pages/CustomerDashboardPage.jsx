@@ -728,36 +728,44 @@ export default function CustomerDashboardPage() {
                                 <p className="text-primary/70 text-sm mt-1 font-semibold">{trendTip.reason}</p>
                               </div>
 
-                              <p className="text-sm font-bold leading-relaxed bg-amber-300 text-slate-900 rounded-lg px-3 py-2 inline-block">
-                                작년 이맘때 <span className="font-extrabold underline decoration-2 decoration-amber-600">{trendTip.lastService}</span> 하셨는데,{' '}
-                                올해 유행하는 <span className="font-black text-amber-900">{trendTip.trend}</span> 해보시는 건 어때요?
-                              </p>
+                              {/* 잡지 타이포 스타일 추천 문구 */}
+                              <div className="space-y-0.5 leading-snug">
+                                <p className="text-[11px] font-medium text-slate-400 uppercase tracking-widest">Last time</p>
+                                <p className="text-[15px] font-extrabold text-slate-700 tracking-tight">
+                                  {trendTip.lastService}
+                                </p>
+                                <p className="text-[11px] font-medium text-slate-400 pt-1.5 pb-0.5">올해 트렌드는 이거야</p>
+                                <p className="text-[22px] font-black tracking-tighter bg-gradient-to-r from-violet-500 via-purple-400 to-rose-400 bg-clip-text text-transparent leading-none">
+                                  {trendTip.trend}
+                                </p>
+                                <p className="text-[11px] text-slate-400 font-medium pt-1">한번 시도해보는 건 어때요?</p>
+                              </div>
 
-                              {/* 예약 CTA 버튼 */}
-                              <button
-                                onClick={() => navigate('/booking')}
-                                className="mt-4 w-full cta-shimmer text-white font-bold text-sm py-3.5 px-5 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
-                              >
-                                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
-                                {t('bookNow') || '지금 예약하기'}
-                              </button>
-
-                              {/* 쿠폰 CTA */}
-                              {coupons.length > 0 && (
+                              {/* CTA 버튼 한 행 */}
+                              <div className="mt-4 flex gap-2">
+                                {/* 예약 버튼 */}
                                 <button
-                                  onClick={() => setActiveTab('coupons')}
-                                  className="mt-2.5 flex items-center gap-2.5 w-full bg-amber-50 hover:bg-amber-100 rounded-xl p-3 border border-amber-200/60 transition-colors group"
+                                  onClick={() => navigate('/booking')}
+                                  className="flex-1 cta-shimmer text-white font-bold text-xs py-3 px-3 rounded-xl shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 active:scale-[0.97] transition-all duration-200 flex items-center justify-center gap-1.5"
                                 >
-                                  <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
-                                  <div className="flex-1 text-left min-w-0">
-                                    <p className="text-[12px] font-bold text-amber-900">
-                                      {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
-                                    </p>
-                                    <p className="text-[10px] text-amber-600/70">{coupons.length}장 사용 가능</p>
-                                  </div>
-                                  <span className="material-symbols-outlined text-amber-400 group-hover:text-amber-600 text-lg transition-colors">chevron_right</span>
+                                  <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                                  {t('bookNow') || '지금 예약하기'}
                                 </button>
-                              )}
+
+                                {/* 쿠폰 버튼 */}
+                                {coupons.length > 0 && (
+                                  <button
+                                    onClick={() => setActiveTab('coupons')}
+                                    className="flex-1 flex items-center justify-center gap-1.5 bg-violet-50 hover:bg-violet-100 active:scale-[0.97] rounded-xl py-3 px-3 border border-violet-200/60 transition-all duration-200 group"
+                                  >
+                                    <span className="material-symbols-outlined text-violet-400 text-base group-hover:text-violet-600 transition-colors" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
+                                    <div className="text-left min-w-0">
+                                      <p className="text-[11px] font-bold text-violet-700 leading-tight">{t('stylePickCoupon') || '쿠폰 할인'}</p>
+                                      <p className="text-[9px] text-violet-400">{coupons.length}장 보유</p>
+                                    </div>
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
