@@ -728,11 +728,13 @@ export default function CustomerDashboardPage() {
                                 <p className="text-primary/70 text-sm mt-1 font-semibold">{trendTip.reason}</p>
                               </div>
 
-                              {/* 한 문장 타이포 — 키워드만 크고 강조 */}
+                              {/* 한 문장 타이포 — 키워드만 크고 강조, 2행 구성 */}
                               <p className="text-[13px] text-slate-500 leading-relaxed">
                                 작년 이맘때{' '}
                                 <span className="text-[17px] font-extrabold text-slate-800 align-baseline">{trendTip.lastService}</span>
-                                {' '}하셨는데, 올해 유행하는{' '}
+                                {' '}하셨는데, 올해 유행하는
+                              </p>
+                              <p className="text-[13px] text-slate-500 leading-relaxed mt-1">
                                 <span className="text-[22px] font-black bg-gradient-to-r from-violet-500 via-purple-400 to-rose-400 bg-clip-text text-transparent align-baseline leading-none">{trendTip.trend}</span>
                                 {' '}해보시는 건 어때요?
                               </p>
