@@ -148,7 +148,7 @@ export default function SalonCodePage() {
               <span className="material-symbols-outlined text-white text-[28px]">storefront</span>
             </div>
             <h1 className="text-white text-4xl font-extrabold tracking-tight mb-3">
-              Welcome to <span className="font-logo italic text-white/90">SalonPay</span>
+              Welcome to <span className="text-white/90">SalonPay</span>
             </h1>
             <p className="text-white/60 text-base leading-relaxed mb-6 max-w-sm">
               {t('enterSalonCodeDesc') || 'Connect to your salon with a simple code and start earning loyalty points.'}

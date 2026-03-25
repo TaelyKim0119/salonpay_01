@@ -186,7 +186,7 @@ export default function CustomerLoginPage() {
 
           {/* Top-right branding */}
           <div className="absolute top-8 right-8 z-10">
-            <p className="font-logo italic text-white/30 text-sm tracking-wide">SalonPay</p>
+            <p className="text-white/25 text-[10px] font-bold uppercase tracking-[4px]">SalonPay</p>
           </div>
         </div>
 

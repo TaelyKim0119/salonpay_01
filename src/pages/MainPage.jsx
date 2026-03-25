@@ -39,13 +39,13 @@ export default function MainPage() {
           <div className="text-slate-900 flex size-12 shrink-0 items-center justify-center cursor-pointer">
             <span className="material-symbols-outlined">arrow_back</span>
           </div>
-          <h2 className="flex-1 text-center pr-12">
-            <span className="font-logo text-sm italic tracking-wide text-slate-900/70">SalonPay</span>
+          <h2 className="text-slate-900 text-lg font-semibold leading-tight tracking-tight flex-1 text-center pr-12 uppercase tracking-widest text-xs opacity-60">
+            SALONPAY
           </h2>
         </div>
 
         <div className="flex flex-col items-center px-6 pt-12 lg:pt-16 pb-8">
-          <h1 className="font-logo italic text-[44px] lg:text-[58px] font-bold leading-none text-center tracking-tight">
+          <h1 className="tracking-tight text-[40px] lg:text-[52px] font-extrabold leading-none text-center">
             <span className="bg-gradient-to-r from-primary via-primary-dark to-rose-accent bg-clip-text text-transparent">Salon</span><span className="text-slate-900">Pay</span>
           </h1>
           <div className="w-12 h-1 bg-gradient-to-r from-accent to-primary rounded-full mt-4 mb-4" />
