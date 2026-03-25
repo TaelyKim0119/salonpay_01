@@ -59,6 +59,16 @@ export default function CustomerDetailPage() {
     return 'history_edu';
   };
 
+  /** 사진이 있는 visit인지 판단 — 시각적 변화가 큰 서비스(염색, 펌, 하이라이트 등) */
+  const hasPhoto = (service) => {
+    const s = (service || '').toLowerCase();
+    return s.includes('염색') || s.includes('color') || s.includes('balayage')
+      || s.includes('펌') || s.includes('perm') || s.includes('wave')
+      || s.includes('하이라이트') || s.includes('highlight')
+      || s.includes('글레이징') || s.includes('glaz')
+      || s.includes('컬러') || s.includes('colour');
+  };
+
   return (
     <div className="bg-bg-light text-slate-900 min-h-screen">
       {/* Header */}
@@ -132,12 +142,27 @@ export default function CustomerDetailPage() {
             visits.map((visit, index) => (
               <div key={visit.id} className="relative flex gap-6 mb-10">
                 <div className="z-10 mt-1 flex-shrink-0">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center ring-4 ring-bg-light ${
-                    index === 0 ? 'bg-rose-accent' : 'bg-slate-300'
-                  }`}>
-                    <span className="material-symbols-outlined text-white text-sm">
-                      {getServiceIcon(visit.service)}
-                    </span>
+                  <div className="relative">
+                    {/* Sparkle effects for photo visits */}
+                    {hasPhoto(visit.service) && (
+                      <>
+                        {/* Ping ring */}
+                        <div className="absolute inset-0 rounded-full bg-primary/30 node-photo-ping" />
+                        {/* Twinkle stars */}
+                        <span className="absolute -top-1 -right-1 text-primary text-[10px] node-twinkle-1">&#10022;</span>
+                        <span className="absolute -bottom-0.5 -left-1 text-primary-light text-[8px] node-twinkle-2">&#10022;</span>
+                        <span className="absolute -top-0.5 -left-1.5 text-rose-accent text-[9px] node-twinkle-3">&#10022;</span>
+                      </>
+                    )}
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ring-4 ring-bg-light ${
+                      hasPhoto(visit.service)
+                        ? 'bg-primary node-photo-glow cursor-pointer'
+                        : index === 0 ? 'bg-rose-accent' : 'bg-slate-300'
+                    }`}>
+                      <span className="material-symbols-outlined text-white text-sm">
+                        {hasPhoto(visit.service) ? 'photo_camera' : getServiceIcon(visit.service)}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="flex-1">

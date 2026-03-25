@@ -696,62 +696,79 @@ export default function CustomerDashboardPage() {
                 {/* Chart */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 lg:p-5 relative">
 
-                  {/* ── Style Pick — 매거진 카드 (반응형) ── */}
+                  {/* ── Style Pick — 프리미엄 매거진 카드 (반응형) ── */}
                   {trendTip && (
-                    <div className="mb-4 rounded-2xl overflow-hidden shadow-md border-2 border-pink-400 bg-white ring-2 ring-pink-200 ring-offset-2">
-                      {/* 모바일: 세로 레이아웃 / PC: 가로 레이아웃 */}
-                      <div className="flex flex-col lg:flex-row">
-                        {/* 이미지 영역 */}
-                        <div className="relative w-full lg:w-1/2 aspect-[16/10] lg:aspect-auto lg:min-h-[220px] overflow-hidden">
-                          <img
-                            src="/images/style-pick.png"
-                            alt="Style Pick"
-                            className="absolute inset-0 w-full h-full object-cover object-center"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-transparent lg:to-black/20" />
-                          {/* 뱃지 */}
-                          <div className="absolute top-3 left-3 flex items-center gap-2">
-                            <span className="px-2.5 py-1 bg-white/95 backdrop-blur-sm text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full shadow">
-                              {t('stylePick') || 'Style Pick'}
-                            </span>
-                            <span className="px-2 py-0.5 bg-pink-500 text-white text-[9px] font-bold rounded-full animate-pulse shadow">HOT</span>
-                          </div>
-                          {/* 모바일 하단 트렌드명 */}
-                          <div className="absolute bottom-3 left-4 right-4 lg:hidden">
-                            <p className="text-white text-lg font-extrabold tracking-tight drop-shadow-lg">{trendTip.trend}</p>
-                            <p className="text-white/70 text-[11px] mt-0.5">{trendTip.reason}</p>
-                          </div>
-                        </div>
-
-                        {/* 텍스트 + CTA */}
-                        <div className="flex-1 p-4 lg:p-5 flex flex-col justify-center">
-                          {/* PC 트렌드명 */}
-                          <div className="hidden lg:block mb-2">
-                            <p className="text-slate-900 text-xl font-extrabold tracking-tight">{trendTip.trend}</p>
-                            <p className="text-slate-400 text-xs mt-0.5">{trendTip.reason}</p>
-                          </div>
-
-                          <p className="text-[13px] text-slate-600 leading-relaxed">
-                            작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데,{' '}
-                            올해 유행하는 <span className="font-extrabold text-pink-600">{trendTip.trend}</span> 해보시는 건 어때요?
-                          </p>
-
-                          {/* 쿠폰 CTA */}
-                          {coupons.length > 0 && (
-                            <button
-                              onClick={() => setActiveTab('coupons')}
-                              className="mt-3 flex items-center gap-2.5 w-full bg-slate-50 hover:bg-slate-100 rounded-xl p-3 border border-slate-100 transition-colors group"
-                            >
-                              <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
-                              <div className="flex-1 text-left min-w-0">
-                                <p className="text-[12px] font-bold text-slate-800">
-                                  {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
-                                </p>
-                                <p className="text-[10px] text-slate-400">{coupons.length}장 사용 가능</p>
+                    <div className="mb-4 style-pick-glow rounded-[18px]">
+                      {/* Shimmer border wrapper */}
+                      <div className="style-pick-border rounded-[18px] p-[2.5px]">
+                        <div className="rounded-2xl overflow-hidden bg-white">
+                          {/* 모바일: 세로 레이아웃 / PC: 가로 레이아웃 */}
+                          <div className="flex flex-col lg:flex-row">
+                            {/* 이미지 영역 */}
+                            <div className="relative w-full lg:w-1/2 aspect-[16/10] lg:aspect-auto lg:min-h-[240px] overflow-hidden">
+                              <img
+                                src="/images/style-pick.png"
+                                alt="Style Pick"
+                                className="absolute inset-0 w-full h-full object-cover object-center scale-105 hover:scale-110 transition-transform duration-700"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-black/10 lg:to-black/30" />
+                              {/* 뱃지 */}
+                              <div className="absolute top-3 left-3 flex items-center gap-2">
+                                <span className="px-3 py-1.5 bg-white/95 backdrop-blur-sm text-[10px] font-black text-slate-900 uppercase tracking-wider rounded-full shadow-lg">
+                                  <span className="material-symbols-outlined text-primary text-[13px] align-middle mr-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>auto_awesome</span>
+                                  {t('stylePick') || 'Style Pick'}
+                                </span>
+                                <span className="hot-badge px-2.5 py-1 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[10px] font-extrabold rounded-full shadow-lg shadow-rose-500/30">
+                                  HOT
+                                </span>
                               </div>
-                              <span className="material-symbols-outlined text-slate-300 group-hover:text-slate-500 text-lg transition-colors">chevron_right</span>
-                            </button>
-                          )}
+                              {/* 모바일 하단 트렌드명 */}
+                              <div className="absolute bottom-3 left-4 right-4 lg:hidden">
+                                <p className="text-white text-2xl font-extrabold tracking-tight drop-shadow-lg leading-tight">{trendTip.trend}</p>
+                                <p className="text-white/80 text-xs mt-1 font-medium">{trendTip.reason}</p>
+                              </div>
+                            </div>
+
+                            {/* 텍스트 + CTA */}
+                            <div className="flex-1 p-4 lg:p-6 flex flex-col justify-center">
+                              {/* PC 트렌드명 */}
+                              <div className="hidden lg:block mb-3">
+                                <p className="text-slate-900 text-2xl font-extrabold tracking-tight leading-tight">{trendTip.trend}</p>
+                                <p className="text-primary/70 text-sm mt-1 font-semibold">{trendTip.reason}</p>
+                              </div>
+
+                              <p className="text-sm text-slate-600 leading-relaxed">
+                                작년 이맘때 <span className="font-bold text-slate-900">{trendTip.lastService}</span> 하셨는데,{' '}
+                                올해 유행하는 <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-pink-500">{trendTip.trend}</span> 해보시는 건 어때요?
+                              </p>
+
+                              {/* 예약 CTA 버튼 */}
+                              <button
+                                onClick={() => navigate('/booking')}
+                                className="mt-4 w-full cta-shimmer text-white font-bold text-sm py-3.5 px-5 rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
+                              >
+                                <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>calendar_month</span>
+                                {t('bookNow') || '지금 예약하기'}
+                              </button>
+
+                              {/* 쿠폰 CTA */}
+                              {coupons.length > 0 && (
+                                <button
+                                  onClick={() => setActiveTab('coupons')}
+                                  className="mt-2.5 flex items-center gap-2.5 w-full bg-amber-50 hover:bg-amber-100 rounded-xl p-3 border border-amber-200/60 transition-colors group"
+                                >
+                                  <span className="material-symbols-outlined text-amber-500 text-xl" style={{ fontVariationSettings: "'FILL' 1" }}>confirmation_number</span>
+                                  <div className="flex-1 text-left min-w-0">
+                                    <p className="text-[12px] font-bold text-amber-900">
+                                      {t('stylePickCoupon') || '쿠폰으로 더 저렴하게!'}
+                                    </p>
+                                    <p className="text-[10px] text-amber-600/70">{coupons.length}장 사용 가능</p>
+                                  </div>
+                                  <span className="material-symbols-outlined text-amber-400 group-hover:text-amber-600 text-lg transition-colors">chevron_right</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
