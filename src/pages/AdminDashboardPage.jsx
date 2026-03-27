@@ -1695,19 +1695,6 @@ export default function AdminDashboardPage() {
                   <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
                 </button>
                 <button
-                  onClick={() => { setShowSettings(false); navigate('/admin/ai-analysis'); }}
-                  className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-rose-accent/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-rose-accent">auto_awesome</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-slate-900">{t('aiAnalysis') || 'AI Analysis'}</p>
-                    <p className="text-xs text-slate-500">{t('aiAnalysisDesc') || 'AI-powered business insights'}</p>
-                  </div>
-                  <span className="material-symbols-outlined text-slate-400 text-lg">chevron_right</span>
-                </button>
-                <button
                   onClick={() => { setShowSettings(false); handleLogout(); }}
                   className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 transition-colors text-left"
                 >
